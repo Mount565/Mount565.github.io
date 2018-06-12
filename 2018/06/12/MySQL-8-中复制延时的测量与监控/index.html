@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="MySQL 8 中复制延时的测量与监控"/>
+
+
+
+
+  <meta name="keywords" content="Replication,MySQL8,MGR," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="MyInno">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="http://yoursite.com/2018/06/12/MySQL-8-中复制延时的测量与监控/"/>
+
+
+<meta name="description" content="新增复制时间戳 MySQL8 在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transactio">
+<meta name="keywords" content="Replication,MySQL8,MGR">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL 8 中复制延时的测量与监控">
+<meta property="og:url" content="http://yoursite.com/2018/06/12/MySQL-8-中复制延时的测量与监控/index.html">
+<meta property="og:site_name" content="MyInno">
+<meta property="og:description" content="新增复制时间戳 MySQL8 在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transactio">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-12T12:49:35.549Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL 8 中复制延时的测量与监控">
+<meta name="twitter:description" content="新增复制时间戳 MySQL8 在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transactio">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: false
+    },
+  };
+</script>
+
+
+
+
+  
+
+
+
+    <title> MySQL 8 中复制延时的测量与监控 - MyInno </title>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">MyInno</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/inno">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          MySQL 8 中复制延时的测量与监控
+        
+      </h1>
+
+      <time class="post-time">
+          Jun 12 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <h4 id="新增复制时间戳"><a href="#新增复制时间戳" class="headerlink" title="新增复制时间戳"></a>新增复制时间戳</h4><p>MySQL8 在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction)的，而不再是基于事件（event）。 </p>
+<ul>
+<li>original_commit_timestamp： 在master节点（事务产生的原始节点），事务成功commit(写入binlog)的毫秒数（基于unix epoch time：1970-01-01T00:00:00Z算起）</li>
+<li>immediate_commit_timestamp： 在即时主机，该事务被成功commit的毫秒数（基于unix epoch time：1970-01-01T00:00:00Z算起）</li>
+</ul>
+<p><em>什么是即时主机？在主从拓扑架构中，即时主机可以被理解为应用该binglog的主机，也可简单理解为slave.</em></p>
+<p>同一个事务在同一主从复制架构中，其original_commit_timestamp都是一样的，而immediate_commit_timestamp则因各主机应用（apply）该事务的时间而异。</p>
+<p>在主节点（master）上original_commit_timestamp和immediate_commit_timestamp是一致的（group replication 架构有所不同）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#180606 14:46:08 server id 1  end_log_pos 27261 	GTID	last_committed=0	sequence_number=17	rbr_only=yes	original_committed_timestamp=1528267568948594	immediate_com</span><br><span class="line">mit_timestamp=1528267569283514	transaction_length=1687</span><br><span class="line">/*!50718 SET TRANSACTION ISOLATION LEVEL READ COMMITTED*//*!*/;</span><br><span class="line"># original_commit_timestamp=1528267568948594 (2018-06-06 14:46:08.948594 CST)</span><br><span class="line"># immediate_commit_timestamp=1528267569283514 (2018-06-06 14:46:09.283514 CST)</span><br><span class="line">/*!80001 SET @@session.original_commit_timestamp=1528267568948594*//*!*/;</span><br><span class="line">SET @@SESSION.GTID_NEXT= &apos;aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:420051&apos;/*!*/;</span><br><span class="line"># at 27261</span><br><span class="line">#180606 14:46:08 server id 1  end_log_pos 27341 	Query	thread_id=461	exec_time=0	error_code=0</span><br><span class="line">SET TIMESTAMP=1528267568/*!*/;</span><br><span class="line">BEGIN</span><br></pre></td></tr></table></figure>
+<p>上述binlog片段来自与group replication架构中的master节点，可以看到immediate_commit_timestamp 是略晚于original_commit_timestamp的。</p>
+<p>这是因为original_commit_timestamp是在一个事务准备好commit时产生的，而此时尚未commit,也就是说这个事务已经在主节点上完成执行（还没有最终commit）,它的写集（writeset）已经产生,并准备发送给其它节点做冲突校验（还没有发送），此时产生的original_commit_timestamp时间戳。该时间戳会随事务一起广播到其它组内节点（group replication members）。 </p>
+<p>immediate_commit_timestamp 时间戳则是该事务在master节点上的最终commit时间。 </p>
+<p>主节点上immediate_commit_timestamp - original_commit_timestamp 恰恰是该事务校验所花费的时间。</p>
+<p>在group replication架构中，还有一种事件比较特殊:视图改变事件(View Change Event)， 当复制组中有新节点加入，或有节点退出时，会触发view change evnet. 该事件是由个节点自主产生，自主应用的，而非由一个节点产生然后复制广播到其它节点，因此这些事务的original_commit_timestamp 会被设置为0. </p>
+<h4 id="复制延时监控"><a href="#复制延时监控" class="headerlink" title="复制延时监控"></a>复制延时监控</h4><p>常用的复制延时查看是通过执行show slave status命令，查看Seconds_Behind_Master字段，但这种简单的监控只适用于传统的主从复制，而对于新特性组复制（Group Replication） 则不适用了。<br>MySQL 对于GR复制模式提供了更加细粒度的监控信息，这些信息通过查看performance_schema库中的一些表可以获得</p>
+<ul>
+<li>replication_connection_status: 当前连接信息，提供当前加入到relay队列中的事务，以及该事务的original_commit_timestamp等信息</li>
+<li><p>replication_applier_status_by_coordinator: 启用MTS时，当前调度线程的信息,包括上一个已处理事务的GTID,以及original_commit_timestamp等信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from replication_applier_status_by_coordinator\G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">                                         CHANNEL_NAME: group_replication_applier</span><br><span class="line">                                            THREAD_ID: 147</span><br><span class="line">                                        SERVICE_STATE: ON</span><br><span class="line">                                    LAST_ERROR_NUMBER: 0</span><br><span class="line">                                   LAST_ERROR_MESSAGE: </span><br><span class="line">                                 LAST_ERROR_TIMESTAMP: 0000-00-00 00:00:00.000000</span><br><span class="line">                           LAST_PROCESSED_TRANSACTION: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:2523170</span><br><span class="line"> LAST_PROCESSED_TRANSACTION_ORIGINAL_COMMIT_TIMESTAMP: 2018-06-12 10:36:51.884949</span><br><span class="line">LAST_PROCESSED_TRANSACTION_IMMEDIATE_COMMIT_TIMESTAMP: 0000-00-00 00:00:00.000000</span><br><span class="line">    LAST_PROCESSED_TRANSACTION_START_BUFFER_TIMESTAMP: 2018-06-12 10:38:02.636455</span><br><span class="line">      LAST_PROCESSED_TRANSACTION_END_BUFFER_TIMESTAMP: 2018-06-12 10:38:02.636493</span><br><span class="line">                               PROCESSING_TRANSACTION: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:2523171</span><br><span class="line">     PROCESSING_TRANSACTION_ORIGINAL_COMMIT_TIMESTAMP: 2018-06-12 10:36:51.884960</span><br><span class="line">    PROCESSING_TRANSACTION_IMMEDIATE_COMMIT_TIMESTAMP: 0000-00-00 00:00:00.000000</span><br><span class="line">        PROCESSING_TRANSACTION_START_BUFFER_TIMESTAMP: 2018-06-12 10:38:02.636495</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>replication_applier_status_worker: 当前应用线程的信息，如果启用了MTS，会有多个，其表结构与replication_applier_status_by_coordinator类似</p>
+</li>
+</ul>
+<p>根据常见的监控需求，我写了几个获取延时的监控SQL，大家可以参考：</p>
+<p>查看复制落后延时(MTS ON)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select if(PROCESSING_TRANSACTION &lt;&gt;&apos;&apos;, timestampdiff(second,LAST_PROCESSED_TRANSACTION_ORIGINAL_COMMIT_TIMESTAMP,current_timestamp()),0) lag_time from performance_schema.replication_applier_status_by_coordinator where CHANNEL_NAME=&apos;group_replication_applier&apos;;</span><br></pre></td></tr></table></figure></p>
+<p>查看复制落后延时(MTS OFF)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select  if(APPLYING_TRANSACTION &lt;&gt;&apos;&apos;, timestampdiff(second,LAST_APPLIED_TRANSACTION_ORIGINAL_COMMIT_TIMESTAMP,current_timestamp()),0) lag_time from replication_applier_status_by_worker where CHANNEL_NAME=&apos;group_replication_applier&apos;;</span><br></pre></td></tr></table></figure></p>
+<p>如果查看落后的事务数，而非时间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select Count_transactions_remote_in_applier_queue from performance_schema.replication_group_member_stats where member_id=@@server_uuid;</span><br></pre></td></tr></table></figure></p>
+<p><a href="https://dev.mysql.com/doc/mysql-replication-excerpt/8.0/en/replication-delayed.html" target="_blank" rel="noopener">参考资料</a></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/Replication/">Replication</a>
+		  
+			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+			<a href="/tags/MGR/">MGR</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/06/12/The-Flow-Control-in-MGR/">
+        <span class="next-text nav-default">The Flow Control in MGR</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+      <!-- adsense code goes here  -->
+
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL8/">MySQL8</a><span class="category-list-count">2</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <p>Friends shows here</p>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2014 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>

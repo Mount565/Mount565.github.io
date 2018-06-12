@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="The Flow Control in MGR"/>
+
+
+
+
+  <meta name="keywords" content="MySQL8,MGR,Group Replication,PXC," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="MyInno">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="http://yoursite.com/2018/06/12/The-Flow-Control-in-MGR/"/>
+
+
+<meta name="description" content="MGR 中Flow Control的实现方式 在MySQL高可用领域，Percona 将MySQL和Galera Cluster相融合，形成PXC分支，可谓是一枝独秀，它不仅实现了数据的强（或较强）一致性，而且完美实现failover，即当有一个节点crash时，数据零丢失切换至其它节点，这使其在各">
+<meta name="keywords" content="MySQL8,MGR,Group Replication,PXC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Flow Control in MGR">
+<meta property="og:url" content="http://yoursite.com/2018/06/12/The-Flow-Control-in-MGR/index.html">
+<meta property="og:site_name" content="MyInno">
+<meta property="og:description" content="MGR 中Flow Control的实现方式 在MySQL高可用领域，Percona 将MySQL和Galera Cluster相融合，形成PXC分支，可谓是一枝独秀，它不仅实现了数据的强（或较强）一致性，而且完美实现failover，即当有一个节点crash时，数据零丢失切换至其它节点，这使其在各">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-12T12:37:37.244Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Flow Control in MGR">
+<meta name="twitter:description" content="MGR 中Flow Control的实现方式 在MySQL高可用领域，Percona 将MySQL和Galera Cluster相融合，形成PXC分支，可谓是一枝独秀，它不仅实现了数据的强（或较强）一致性，而且完美实现failover，即当有一个节点crash时，数据零丢失切换至其它节点，这使其在各">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: false
+    },
+  };
+</script>
+
+
+
+
+  
+
+
+
+    <title> The Flow Control in MGR - MyInno </title>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">MyInno</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/inno">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          The Flow Control in MGR
+        
+      </h1>
+
+      <time class="post-time">
+          Jun 12 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <h4 id="MGR-中Flow-Control的实现方式"><a href="#MGR-中Flow-Control的实现方式" class="headerlink" title="MGR 中Flow Control的实现方式"></a>MGR 中Flow Control的实现方式</h4><p>在MySQL高可用领域，Percona 将MySQL和Galera Cluster相融合，形成PXC分支，可谓是一枝独秀，它不仅实现了数据的强（或较强）一致性，而且完美实现failover，即当有一个节点crash时，数据零丢失切换至其它节点，这使其在各界得到广泛的应用。</p>
+<p>然而实现强一致性并不是那么容易，它是以牺牲性能为代价的，Flow Control是为了实现强一致性而引入的一个性能控制概念。当集群中某节点对事务的应用落后于集群一个数量值时，该节点会向其它节点发送一个flow control指令，指示其它节点减慢或暂停事务的执行，以等待其追赶上来，以免落后太多。而当该节点事务落后量低于flow control的最低限度时，又会发送一个撤销FC的指令，告诉其它节点可以正常执行事务了，我追上来了。 这是PXC的flow control 模式。</p>
+<p>而MGR的Flow Control实现却有所不同:</p>
+<ul>
+<li><p>首先复制组（Group Replication）中writer节点事务执行不会完全暂停，只会被节流</p>
+</li>
+<li><p>其次复制组（Group Replication）中的节点从不发送flow control 到其它节点，而是各节点在复制组内相互同步applier线程的执行状况，applier队列中挤压的事务数量，certification 队列中挤压的事务数量等信息。当发现某些节点事务挤压超过一定阈值时，该节点会限制（并不暂停，执行减少到一定的量）自身的事务执行。</p>
+</li>
+</ul>
+<p>applier_queue（COUNT_TRANSACTIONS_REMOTE_IN_APPLIER_QUEUE）和certification_queue（Count_transactions_in_queue）的信息存储在performance_schema.replication_group_member_stats表中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from performance_schema.replication_group_member_stats\G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">                              CHANNEL_NAME: group_replication_applier</span><br><span class="line">                                   VIEW_ID: 15282490578905236:22</span><br><span class="line">                                 MEMBER_ID: ec5e51ae-68a0-11e8-8571-52540017b589</span><br><span class="line">               COUNT_TRANSACTIONS_IN_QUEUE: 0</span><br><span class="line">                COUNT_TRANSACTIONS_CHECKED: 961308</span><br><span class="line">                  COUNT_CONFLICTS_DETECTED: 0</span><br><span class="line">        COUNT_TRANSACTIONS_ROWS_VALIDATING: 252</span><br><span class="line">        TRANSACTIONS_COMMITTED_ALL_MEMBERS: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-1939690:2317275-2640433</span><br><span class="line">            LAST_CONFLICT_FREE_TRANSACTION: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:2655998</span><br><span class="line">COUNT_TRANSACTIONS_REMOTE_IN_APPLIER_QUEUE: 0</span><br><span class="line">         COUNT_TRANSACTIONS_REMOTE_APPLIED: 622416</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_PROPOSED: 338895</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_ROLLBACK: 0</span><br><span class="line">*************************** 2. row ***************************</span><br><span class="line">                              CHANNEL_NAME: group_replication_applier</span><br><span class="line">                                   VIEW_ID: 15282490578905236:22</span><br><span class="line">                                 MEMBER_ID: ec725fcd-692c-11e8-bb5f-525400f9f72b</span><br><span class="line">               COUNT_TRANSACTIONS_IN_QUEUE: 0</span><br><span class="line">                COUNT_TRANSACTIONS_CHECKED: 961480</span><br><span class="line">                  COUNT_CONFLICTS_DETECTED: 0</span><br><span class="line">        COUNT_TRANSACTIONS_ROWS_VALIDATING: 46042</span><br><span class="line">        TRANSACTIONS_COMMITTED_ALL_MEMBERS: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-1939690:2317275-2640433</span><br><span class="line">            LAST_CONFLICT_FREE_TRANSACTION: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:2656339</span><br><span class="line">COUNT_TRANSACTIONS_REMOTE_IN_APPLIER_QUEUE: 8437</span><br><span class="line">         COUNT_TRANSACTIONS_REMOTE_APPLIED: 953043</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_PROPOSED: 0</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_ROLLBACK: 0</span><br><span class="line">2 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure></p>
+<p>flow control 相关阈值由如下变量控制</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">group_replication_flow_control_applier_threshold   (default is 25000)</span><br><span class="line">group_replication_flow_control_certifier_threshold (default is 25000)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当某节点的group_replication_flow_control_mode 设置为DISABLE时,该节点不会拖慢group中的其它节点，即使它不应用binlog;</li>
+<li>当group_replication_flow_control_mode 设置为QUOTA时，即启用flow control. 它会触发writer节点启用flow control .当writer节点发现其它节点队列挤压超过上面设置的相关阈值时，该节点会将事务执行降低到一个最小定额，这个最小定额是上一秒钟group内所有节点中应用binlog 事务的最小量。因此这个quota是不断变化的。</li>
+</ul>
+<p><strong>结论</strong>：</p>
+<ul>
+<li>PXC中的flow control是有慢节点发出的，writer节点收到后进行事务限流。</li>
+<li>而MGR中的flow control 则是有writer节点根据各节点发送到组内的统计数据自己决定是否启用flow control</li>
+</ul>
+<p><strong>参考资料</strong></p>
+<p><a href="https://dev.mysql.com/worklog/task/?id=9838" target="_blank" rel="noopener">https://dev.mysql.com/worklog/task/?id=9838</a></p>
+<p><a href="http://mysqlhighavailability.com/zooming-in-on-group-replication-performance/" target="_blank" rel="noopener">http://mysqlhighavailability.com/zooming-in-on-group-replication-performance/</a></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+			<a href="/tags/MGR/">MGR</a>
+		  
+			<a href="/tags/Group-Replication/">Group Replication</a>
+		  
+			<a href="/tags/PXC/">PXC</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2018/06/12/MySQL-8-中复制延时的测量与监控/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">MySQL 8 中复制延时的测量与监控</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/2018/06/06/test-it/">
+        <span class="next-text nav-default">Test to put an image</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+      <!-- adsense code goes here  -->
+
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL8/">MySQL8</a><span class="category-list-count">2</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <p>Friends shows here</p>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2014 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
