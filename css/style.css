@@ -1,3 +1,6 @@
+.cust-link a:hover {
+  color: green; }
+
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
 /**
  * 1. Set default font family to sans-serif.
@@ -450,11 +453,11 @@ h6 {
 
 #primary.home {
   width: 73%;
-  float: left; }
+  float: right; }
 
 #primary.post {
   width: 73%;
-  float: left; }
+  float: right; }
 
 #primary {
   max-width: 850px;
@@ -805,7 +808,7 @@ h6 {
 
 #secondary {
   width: 19%;
-  float: right;
+  float: left;
   padding-top: 40px;
   color: rgba(0, 0, 0, 0.6); }
   #secondary ol, #secondary ul {
