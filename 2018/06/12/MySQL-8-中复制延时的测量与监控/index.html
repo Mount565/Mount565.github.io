@@ -17,7 +17,7 @@
 
 
 
-  <meta name="keywords" content="Replication,MySQL8,MGR," />
+  <meta name="keywords" content="MySQL8,Replication,MGR," />
 
 
 
@@ -36,14 +36,14 @@
 
 
 <meta name="description" content="新增复制时间戳 MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction">
-<meta name="keywords" content="Replication,MySQL8,MGR">
+<meta name="keywords" content="MySQL8,Replication,MGR">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL 8 中复制延时的测量与监控分析">
 <meta property="og:url" content="http://yoursite.com/2018/06/12/MySQL-8-中复制延时的测量与监控/index.html">
 <meta property="og:site_name" content="MyInno">
 <meta property="og:description" content="新增复制时间戳 MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-13T11:57:43.587Z">
+<meta property="og:updated_time" content="2018-06-14T11:02:42.862Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL 8 中复制延时的测量与监控分析">
 <meta name="twitter:description" content="新增复制时间戳 MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction">
@@ -53,13 +53,15 @@
 <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
 
 
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
 
 
 
 <script type="text/javascript">
   var themeConfig = {
     fancybox: {
-      enable: false
+      enable: true
     },
   };
 </script>
@@ -187,9 +189,9 @@
 		
 		<div class="post-tags">
 		  
-			<a href="/tags/Replication/">Replication</a>
-		  
 			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+			<a href="/tags/Replication/">Replication</a>
 		  
 			<a href="/tags/MGR/">MGR</a>
 		  
@@ -199,6 +201,12 @@
         
         
   <nav class="post-nav">
+    
+      <a class="prev" href="/2018/06/14/MySQL8-基于角色的权限管理/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">MySQL8 基于角色的权限管理</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
     
     
       <a class="next" href="/2018/06/12/The-Flow-Control-in-MGR/">
@@ -239,14 +247,14 @@
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL8/">MySQL8</a><span class="category-list-count">2</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">3</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
@@ -266,7 +274,7 @@
     
         &copy;
     
-        2014 -
+        2017 -
     
     2018
     <span class="footer-author">William Wang.</span>
@@ -285,6 +293,8 @@
 
 
     
+  
+
 
 
 
@@ -293,6 +303,8 @@
     <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
   
 
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
   
 
     <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
