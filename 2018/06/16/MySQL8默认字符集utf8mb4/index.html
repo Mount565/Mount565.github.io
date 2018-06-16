@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="MySQL8默认字符集utf8mb4"/>
+
+
+
+
+  <meta name="keywords" content="MySQL8," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="http://dbalife.info/2018/06/16/MySQL8默认字符集utf8mb4/"/>
+
+
+<meta name="description" content="MySQL中utf8字符集使用三个字节编码一个字符，自2004（mysql4.1）年被引入，能够支持绝大多数语言，但依然有些字符不能正确编码，如表情字符。为此mysql5.5引入了utf8mb4字符集，提供了另一种选择。在mysql5.7对utf8mb4进行了大幅优化，并丰富了校验字符集。直到今日m">
+<meta name="keywords" content="MySQL8">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL8默认字符集utf8mb4">
+<meta property="og:url" content="http://dbalife.info/2018/06/16/MySQL8默认字符集utf8mb4/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="MySQL中utf8字符集使用三个字节编码一个字符，自2004（mysql4.1）年被引入，能够支持绝大多数语言，但依然有些字符不能正确编码，如表情字符。为此mysql5.5引入了utf8mb4字符集，提供了另一种选择。在mysql5.7对utf8mb4进行了大幅优化，并丰富了校验字符集。直到今日m">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-16T10:18:56.731Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL8默认字符集utf8mb4">
+<meta name="twitter:description" content="MySQL中utf8字符集使用三个字节编码一个字符，自2004（mysql4.1）年被引入，能够支持绝大多数语言，但依然有些字符不能正确编码，如表情字符。为此mysql5.5引入了utf8mb4字符集，提供了另一种选择。在mysql5.7对utf8mb4进行了大幅优化，并丰富了校验字符集。直到今日m">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+
+
+
+    <title> MySQL8默认字符集utf8mb4 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          MySQL8默认字符集utf8mb4
+        
+      </h1>
+
+      <time class="post-time">
+          Jun 16 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>MySQL中utf8字符集使用三个字节编码一个字符，自2004（mysql4.1）年被引入，能够支持绝大多数语言，但依然有些字符不能正确编码，如表情字符。为此mysql5.5引入了utf8mb4字符集，提供了另一种选择。在mysql5.7对utf8mb4进行了大幅优化，并丰富了校验字符集。直到今日mysql8, utf8mb4成为了默认字符集，并极大地扩充了collation set。 增加了accent sensitive(as) , accent_insensitive(ai)（重读敏感，对于某些语言需要重读的字符可以是用专用字符标识,如：ã） ,可以支持更加丰富的字符校验。</p>
+<p>登陆MySQL8 输入status命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">mysql8[(none)]&gt;status</span><br><span class="line">--------------</span><br><span class="line">bin/mysql  Ver 8.0.11 for linux-glibc2.12 on x86_64 (MySQL Community Server - GPL)</span><br><span class="line"></span><br><span class="line">Connection id:		8</span><br><span class="line">Current database:	</span><br><span class="line">Current user:		root@localhost</span><br><span class="line">SSL:			Not in use</span><br><span class="line">Current pager:		stdout</span><br><span class="line">Using outfile:		&apos;&apos;</span><br><span class="line">Using delimiter:	;</span><br><span class="line">Server version:		8.0.11 MySQL Community Server - GPL</span><br><span class="line">Protocol version:	10</span><br><span class="line">Connection:		Localhost via UNIX socket</span><br><span class="line">Server characterset:	utf8mb4</span><br><span class="line">Db     characterset:	utf8mb4</span><br><span class="line">Client characterset:	utf8mb4</span><br><span class="line">Conn.  characterset:	utf8mb4</span><br><span class="line">UNIX socket:		/tmp/mysql8.sock</span><br><span class="line">Uptime:			13 min 7 sec</span><br><span class="line"></span><br><span class="line">Threads: 3  Questions: 24  Slow queries: 0  Opens: 127  Flush tables: 2  Open tables: 103  Queries per second avg: 0.030</span><br><span class="line">--------------</span><br></pre></td></tr></table></figure></p>
+<p>可以看到其所有字符集都是utf8mb4. 那么其默认的校验字符集是什么呢？执行如下SQL， 该SQL查出了MySQL8支持的所有字符集校验，还是蛮丰富的，针对不少特定语言都有专用的校验字符集：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">mysql8[(none)]&gt;select * from information_schema.COLLATIONS where CHARACTER_SET_NAME = &apos;utf8mb4&apos;;</span><br><span class="line">+----------------------------+--------------------+-----+------------+-------------+---------+---------------+</span><br><span class="line">| COLLATION_NAME             | CHARACTER_SET_NAME | ID  | IS_DEFAULT | IS_COMPILED | SORTLEN | PAD_ATTRIBUTE |</span><br><span class="line">+----------------------------+--------------------+-----+------------+-------------+---------+---------------+</span><br><span class="line">| utf8mb4_general_ci         | utf8mb4            |  45 |            | Yes         |       1 | PAD SPACE     |</span><br><span class="line">| utf8mb4_bin                | utf8mb4            |  46 |            | Yes         |       1 | PAD SPACE     |</span><br><span class="line">| utf8mb4_unicode_ci         | utf8mb4            | 224 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_icelandic_ci       | utf8mb4            | 225 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_latvian_ci         | utf8mb4            | 226 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_romanian_ci        | utf8mb4            | 227 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_slovenian_ci       | utf8mb4            | 228 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_polish_ci          | utf8mb4            | 229 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_estonian_ci        | utf8mb4            | 230 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_spanish_ci         | utf8mb4            | 231 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_swedish_ci         | utf8mb4            | 232 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_turkish_ci         | utf8mb4            | 233 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_czech_ci           | utf8mb4            | 234 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_danish_ci          | utf8mb4            | 235 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_lithuanian_ci      | utf8mb4            | 236 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_slovak_ci          | utf8mb4            | 237 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_spanish2_ci        | utf8mb4            | 238 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_roman_ci           | utf8mb4            | 239 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_persian_ci         | utf8mb4            | 240 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_esperanto_ci       | utf8mb4            | 241 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_hungarian_ci       | utf8mb4            | 242 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_sinhala_ci         | utf8mb4            | 243 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_german2_ci         | utf8mb4            | 244 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_croatian_ci        | utf8mb4            | 245 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_unicode_520_ci     | utf8mb4            | 246 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_vietnamese_ci      | utf8mb4            | 247 |            | Yes         |       8 | PAD SPACE     |</span><br><span class="line">| utf8mb4_0900_ai_ci         | utf8mb4            | 255 | Yes        | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_de_pb_0900_ai_ci   | utf8mb4            | 256 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_is_0900_ai_ci      | utf8mb4            | 257 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_lv_0900_ai_ci      | utf8mb4            | 258 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_ro_0900_ai_ci      | utf8mb4            | 259 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_sl_0900_ai_ci      | utf8mb4            | 260 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_pl_0900_ai_ci      | utf8mb4            | 261 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_et_0900_ai_ci      | utf8mb4            | 262 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_es_0900_ai_ci      | utf8mb4            | 263 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_sv_0900_ai_ci      | utf8mb4            | 264 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_tr_0900_ai_ci      | utf8mb4            | 265 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_cs_0900_ai_ci      | utf8mb4            | 266 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_da_0900_ai_ci      | utf8mb4            | 267 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_lt_0900_ai_ci      | utf8mb4            | 268 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_sk_0900_ai_ci      | utf8mb4            | 269 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_es_trad_0900_ai_ci | utf8mb4            | 270 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_la_0900_ai_ci      | utf8mb4            | 271 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_eo_0900_ai_ci      | utf8mb4            | 273 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_hu_0900_ai_ci      | utf8mb4            | 274 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_hr_0900_ai_ci      | utf8mb4            | 275 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_vi_0900_ai_ci      | utf8mb4            | 277 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_0900_as_cs         | utf8mb4            | 278 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_de_pb_0900_as_cs   | utf8mb4            | 279 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_is_0900_as_cs      | utf8mb4            | 280 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_lv_0900_as_cs      | utf8mb4            | 281 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_ro_0900_as_cs      | utf8mb4            | 282 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_sl_0900_as_cs      | utf8mb4            | 283 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_pl_0900_as_cs      | utf8mb4            | 284 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_et_0900_as_cs      | utf8mb4            | 285 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_es_0900_as_cs      | utf8mb4            | 286 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_sv_0900_as_cs      | utf8mb4            | 287 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_tr_0900_as_cs      | utf8mb4            | 288 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_cs_0900_as_cs      | utf8mb4            | 289 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_da_0900_as_cs      | utf8mb4            | 290 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_lt_0900_as_cs      | utf8mb4            | 291 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_sk_0900_as_cs      | utf8mb4            | 292 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_es_trad_0900_as_cs | utf8mb4            | 293 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_la_0900_as_cs      | utf8mb4            | 294 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_eo_0900_as_cs      | utf8mb4            | 296 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_hu_0900_as_cs      | utf8mb4            | 297 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_hr_0900_as_cs      | utf8mb4            | 298 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_vi_0900_as_cs      | utf8mb4            | 300 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_ja_0900_as_cs      | utf8mb4            | 303 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_ja_0900_as_cs_ks   | utf8mb4            | 304 |            | Yes         |      24 | NO PAD        |</span><br><span class="line">| utf8mb4_0900_as_ci         | utf8mb4            | 305 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_ru_0900_ai_ci      | utf8mb4            | 306 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">| utf8mb4_ru_0900_as_cs      | utf8mb4            | 307 |            | Yes         |       0 | NO PAD        |</span><br><span class="line">+----------------------------+--------------------+-----+------------+-------------+---------+---------------+</span><br><span class="line">73 rows in set (0.03 sec)</span><br></pre></td></tr></table></figure></p>
+<p>在IS_DEFAULT 标为YES的那一行，可以看到其默认collation set 是utf8mb4_0900_ai_ci。 注意后面的ai_ci, i是指insensitive,ai是指accent insensitive,cs s是指case insensitive. 也就是说默认的字符集校验不区分大小写，如果有区分大小写的校验需求可以使用utf8mb4_0900_as_cs。</p>
+<p>下面做一些测试<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">mysql8[test]&gt;select &apos;a&apos; &lt; &apos;A&apos; collate utf8mb4_0900_as_cs;</span><br><span class="line">+--------------------------------------+</span><br><span class="line">| &apos;a&apos; &lt; &apos;A&apos; collate utf8mb4_0900_as_cs |</span><br><span class="line">+--------------------------------------+</span><br><span class="line">|                                    1 |</span><br><span class="line">+--------------------------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql8[test]&gt;select &apos;a&apos; &lt; &apos;A&apos; collate utf8mb4_0900_ai_ci;</span><br><span class="line">+--------------------------------------+</span><br><span class="line">| &apos;a&apos; &lt; &apos;A&apos; collate utf8mb4_0900_ai_ci |</span><br><span class="line">+--------------------------------------+</span><br><span class="line">|                                    0 |</span><br><span class="line">+--------------------------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql8[test]&gt;select &apos;a&apos; = &apos;A&apos; collate utf8mb4_0900_ai_ci;</span><br><span class="line">+--------------------------------------+</span><br><span class="line">| &apos;a&apos; = &apos;A&apos; collate utf8mb4_0900_ai_ci |</span><br><span class="line">+--------------------------------------+</span><br><span class="line">|                                    1 |</span><br><span class="line">+--------------------------------------+</span><br></pre></td></tr></table></figure></p>
+<p>可以看到使用collate utf8mb4_0900_ai_ci校验只有’a’=’A’是true,其余都是Fase,而使用utf8mb4_0900_as_cs校验’a’&lt;’A’则是True . 其对比并非按ASCII码，因为按照ASCII, ‘a’是大于’A’的。 只有使用二进制字符集校验才使用ASCII，如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql8[(none)]&gt;select &apos;a&apos; &lt; &apos;A&apos; collate utf8mb4_bin;</span><br><span class="line">+-------------------------------+</span><br><span class="line">| &apos;a&apos; &lt; &apos;A&apos; collate utf8mb4_bin |</span><br><span class="line">+-------------------------------+</span><br><span class="line">|                             0 |</span><br><span class="line">+-------------------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure></p>
+<p>这种情况需要了解，有时见到不一样的排序结果要知道是怎么回事。要深入理解其内部实现，请点击<a href="http://mysqlserverteam.com/mysql-8-0-1-accent-and-case-sensitive-collations-for-utf8mb4/" target="_blank" rel="noopener">这里</a>,内容太多，这里不详细赘述。</p>
+<p>还记得以前登陆MySQL为各种编码而头疼吗？ 什么数据库编码，连接编码，客户端编码，搞的晕头转向，一会应用程序读取正常，命令行不正常，一会儿命令行正常，应用程序读取的是乱码，真是无所适从啊。现在好了，MySQL 8 的到来使这些痛苦不再。utf8将会被载入历史，utf8mb4将会成为主流。当然，也有一个弊端，就是对每一个字符多用了一个字节来存储，这意味着你的数据库要增大不少，你是不是该扩容磁盘啦？！</p>
+<p>参考资料</p>
+<p><a href="https://mysqlserverteam.com/mysql-8-0-when-to-use-utf8mb3-over-utf8mb4/" target="_blank" rel="noopener">https://mysqlserverteam.com/mysql-8-0-when-to-use-utf8mb3-over-utf8mb4/</a></p>
+<p><a href="http://mysqlserverteam.com/mysql-8-0-1-accent-and-case-sensitive-collations-for-utf8mb4/" target="_blank" rel="noopener">http://mysqlserverteam.com/mysql-8-0-1-accent-and-case-sensitive-collations-for-utf8mb4/</a></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2018/06/16/The-UUID-in-MySQL8/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">The UUID in MySQL8</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/2018/06/14/MySQL8-基于角色的权限管理/">
+        <span class="next-text nav-default">MySQL8 基于角色的权限管理</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">5</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">1</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <p>Friends shows here</p>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>

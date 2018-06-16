@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="The UUID in MySQL8"/>
+
+
+
+
+  <meta name="keywords" content="MySQL8," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="http://dbalife.info/2018/06/16/The-UUID-in-MySQL8/"/>
+
+
+<meta name="description" content="问题 记得刚接手项目时，看了下项目里的库表结构，发现表主键都是varchar(36),就问研发，为啥搞个这么长的主键？研发说这个主键是通过java 程序产生的UUID，考虑到以后数据分片不会产生重复。考虑的还是挺周到！但这么长字段做主键也有许多问题：   * 首先这个主键很长，而主键会自动添加在每一">
+<meta name="keywords" content="MySQL8">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The UUID in MySQL8">
+<meta property="og:url" content="http://dbalife.info/2018/06/16/The-UUID-in-MySQL8/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="问题 记得刚接手项目时，看了下项目里的库表结构，发现表主键都是varchar(36),就问研发，为啥搞个这么长的主键？研发说这个主键是通过java 程序产生的UUID，考虑到以后数据分片不会产生重复。考虑的还是挺周到！但这么长字段做主键也有许多问题：   * 首先这个主键很长，而主键会自动添加在每一">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-16T10:20:44.619Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The UUID in MySQL8">
+<meta name="twitter:description" content="问题 记得刚接手项目时，看了下项目里的库表结构，发现表主键都是varchar(36),就问研发，为啥搞个这么长的主键？研发说这个主键是通过java 程序产生的UUID，考虑到以后数据分片不会产生重复。考虑的还是挺周到！但这么长字段做主键也有许多问题：   * 首先这个主键很长，而主键会自动添加在每一">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+
+
+
+    <title> The UUID in MySQL8 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          The UUID in MySQL8
+        
+      </h1>
+
+      <time class="post-time">
+          Jun 16 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><p>记得刚接手项目时，看了下项目里的库表结构，发现表主键都是varchar(36),就问研发，为啥搞个这么长的主键？研发说这个主键是通过java 程序产生的UUID，考虑到以后数据分片不会产生重复。考虑的还是挺周到！但这么长字段做主键也有许多问题：</p>
+<ul>
+<li>首先这个主键很长，而主键会自动添加在每一二级索引的后面，这样会导致数据冗余严重，特别是二级索引建多了的情况下，有时会导致索引的数据比表的数据还大！</li>
+<li>其次，这样产生UUID是无序的，导致插入性能很差。因为当插入一个数据到B+tree时，系统将这个数据插入到一个合适的位置，这会导致多次IO，而如果数据本身是自增的，那么系统只须将它添加的B+Tree的末端即可，效率要高的多。</li>
+</ul>
+<p>因此我还是建议使用整型+auto_increment, 虽然MySQLauto_increment有个众所周知的、历史悠久的bug（这个bug终于在MySQL8的到修复，MySQL8中auto_increment将会被写入redo log 中啦，爽歪歪），但大多数情况下还是可靠的，并且MySQL官方也建议使用auto_incremnet做主键。但它也有问题，就是无法适应数据分片的扩容（分库分表），除非你之前规划的非常好。</p>
+<h4 id="MySQL8中的解决方案"><a href="#MySQL8中的解决方案" class="headerlink" title="MySQL8中的解决方案"></a>MySQL8中的解决方案</h4><p>如今MySQL8 中对UUID提供了增强性支持，不仅使其长度大大缩小，而且解决了顺序的问题！（我之所以称之为增强性支持，是因为他们提供了两个内置函数做了转换，感觉这种方式有点儿low,这样的函数我们也可以写啊）</p>
+<p>大家都知道，UUID是由32位16进制字符串组成（不算分隔符’-‘）如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">62ab1547-710f-11e8-9a58-5254007205d6</span><br></pre></td></tr></table></figure></p>
+<p>如果直接保存，则需要32个字符，utf8编码下占用96个字节，对于主键来说还是太长。幸运的是UUID中的每个字符都是16进制字符，两个16进制字符占用一个字节，这样可以轻松将UUID转换为binary(16),占用16个字节，所需空间大大减少，而且二进制字符串检索对比效率很高。</p>
+<p>但还有一个至关重要的问题是UUID的组成中将timestamp 部分的低位时间段（如毫秒）放在了前面，高位时间段（如年月日）放在了后面，这会导致前面的字符变化很快，后面的变化很慢，从而使产生的UUID不能顺序自增。这会导致索引插入效率大大降低。</p>
+<p>为解决这一问题，mysql8提供了两个函数：UID_TO_BIN(arg1)/ BIN_TO_UUID(arg1,arg2)</p>
+<ul>
+<li>UID_TO_BIN(arg1) 将UUID转化为16位二进制字符串，如果参数arg1为true则将UUID中的timestamp部分中的time-low（第一段字符）和time-high（第三段）调换，这样产生的UUID是顺序递增。</li>
+<li>BIN_TO_UUID(arg1,arg2)将16位进制字符串转化为可读的UUID，arg1为16位二进制字符串，如果arg2省略或为false,即将二进制字符串原位转换；如果arg2为true，则将原来调换的time-low和time-high再调换回去，返回原本的uuid.</li>
+</ul>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>创建一张表如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql8[test]&gt;create table t (id varbinary(16) primary key,create_time timestamp default current_timestamp());</span><br><span class="line">Query OK, 0 rows affected (0.34 sec)</span><br></pre></td></tr></table></figure>
+<p>插入几条数据，注意使用了函数uuid_to_bin：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql8[test]&gt;insert into t (id)values(uuid_to_bin(uuid(),true));</span><br><span class="line">Query OK, 1 row affected (0.08 sec)</span><br><span class="line"></span><br><span class="line">mysql8[test]&gt;insert into t (id)values(uuid_to_bin(uuid(),true));</span><br><span class="line">Query OK, 1 row affected (0.08 sec)</span><br><span class="line"></span><br><span class="line">mysql8[test]&gt;insert into t (id)values(uuid_to_bin(uuid(),true));</span><br><span class="line">Query OK, 1 row affected (0.07 sec)</span><br></pre></td></tr></table></figure></p>
+<p>查看结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mysql8[test]&gt;select bin_to_uuid(id) id1,bin_to_uuid(id,true) id2, create_time from t;</span><br><span class="line">+--------------------------------------+--------------------------------------+---------------------+</span><br><span class="line">| id1                                  | id2                                  | create_time         |</span><br><span class="line">+--------------------------------------+--------------------------------------+---------------------+</span><br><span class="line">| 11e87113-f079-024e-8405-5254004332fa | f079024e-7113-11e8-8405-5254004332fa | 2018-06-16 11:18:28 |</span><br><span class="line">| 11e87113-f826-4134-8405-5254004332fa | f8264134-7113-11e8-8405-5254004332fa | 2018-06-16 11:18:41 |</span><br><span class="line">| 11e87113-f88c-c8a6-8405-5254004332fa | f88cc8a6-7113-11e8-8405-5254004332fa | 2018-06-16 11:18:42 |</span><br><span class="line">+--------------------------------------+--------------------------------------+---------------------+</span><br><span class="line">3 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure></p>
+<p>注意字段id1使用了函数bin_to_uuid(id)， 而id2使用了bin_to_uuid(id,true)，注意他们在结果集中的区别。</p>
+<p>如果需要按主键查询，还是需要使用对应的uuid函数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql8[test]&gt;select * from t where id=uuid_to_bin(&apos;f079024e-7113-11e8-8405-5254004332fa&apos;,true);</span><br><span class="line">+------------------+---------------------+</span><br><span class="line">| id               | create_time         |</span><br><span class="line">+------------------+---------------------+</span><br><span class="line">| 篓󷁎RT C2򞞠 | 2018-06-16 11:18:28 |</span><br><span class="line">+------------------+---------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>MySQL8通过提供两个内置函数解决了传统UUID作为主键的缺陷，也使UUID成为了设计主键的首选，特别是在数据分片的架构中，其优势十分突出。我当时一看到这个，还很兴奋，但UUID终究还不是一种数据类型，这多少给应用上增加了些麻烦。相信在MySQL的未来版本会出现一种数据类型叫UUID , 总不能一直弄两个函数糊弄人吧？！（其实目前官方也提到了实现一种新的数据类型，但增加一种数据类型属于重量级实现，代码变动太大，所以当前选择了增加两个函数）</p>
+<h4 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h4><p><a href="https://www.ietf.org/rfc/rfc4122.txt" target="_blank" rel="noopener">https://www.ietf.org/rfc/rfc4122.txt</a></p>
+<p><a href="https://dev.mysql.com/worklog/task/?id=8920" target="_blank" rel="noopener">https://dev.mysql.com/worklog/task/?id=8920</a></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/06/16/MySQL8默认字符集utf8mb4/">
+        <span class="next-text nav-default">MySQL8默认字符集utf8mb4</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">5</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">1</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <p>Friends shows here</p>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
