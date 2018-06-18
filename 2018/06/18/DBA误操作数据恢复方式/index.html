@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="DBA直接面对生产一线数据，且拥有最高权限，DBA误操作往往是致命，因此操作生产环境，DBA往往非常谨慎！尽管如此，但误操作还是难以完全避免。常见的误操作有：delete/update table 忘了where条件，删错表了，删错库了等。一旦发生误操作，恢复数据该如何恢复？  要是发生了误操作可千">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-18T01:11:17.950Z">
+<meta property="og:updated_time" content="2018-06-18T01:14:22.993Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="DBA误操作数据恢复方式">
 <meta name="twitter:description" content="DBA直接面对生产一线数据，且拥有最高权限，DBA误操作往往是致命，因此操作生产环境，DBA往往非常谨慎！尽管如此，但误操作还是难以完全避免。常见的误操作有：delete/update table 忘了where条件，删错表了，删错库了等。一旦发生误操作，恢复数据该如何恢复？  要是发生了误操作可千">
@@ -70,6 +70,16 @@
 
 
   
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
 
 
 
@@ -164,9 +174,8 @@
 <li>将binlog应用到误操作到GTID前面（start slave until sql_before_gtid=’58ef0086-3e40-11e8-9067-dece6fc17919:12’）</li>
 <li><p>停止slave , 注入空事务,把误操作这个gtid变成空事务</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">set gtid_next=&apos;58ef0086-3e40-11e8-9067-dece6fc17919:12&apos;</span><br><span class="line">begin;</span><br><span class="line">commit;</span><br><span class="line">set gtid_next=&quot;AUTOMATIC&quot;;</span><br><span class="line">start slave;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>如此数据恢复完成，然后提升从节点为master, 原来的master 重建。</li>
-</ul>
+</li>
+<li><p>如此数据恢复完成，然后提升从节点为master, 原来的master 重建。</p>
 </li>
 </ul>
 </li>
