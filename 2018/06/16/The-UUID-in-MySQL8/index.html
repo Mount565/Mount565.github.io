@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="问题 记得刚接手项目时，看了下项目里的库表结构，发现表主键都是varchar(36),就问研发，为啥搞个这么长的主键？研发说这个主键是通过java 程序产生的UUID，考虑到以后数据分片不会产生重复。考虑的还是挺周到！但这么长字段做主键也有许多问题：   * 首先这个主键很长，而主键会自动添加在每一">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-16T10:20:44.619Z">
+<meta property="og:updated_time" content="2018-06-20T11:07:31.849Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="The UUID in MySQL8">
 <meta name="twitter:description" content="问题 记得刚接手项目时，看了下项目里的库表结构，发现表主键都是varchar(36),就问研发，为啥搞个这么长的主键？研发说这个主键是通过java 程序产生的UUID，考虑到以后数据分片不会产生重复。考虑的还是挺周到！但这么长字段做主键也有许多问题：   * 首先这个主键很长，而主键会自动添加在每一">
@@ -173,7 +173,7 @@
 <li>首先这个主键很长，而主键会自动添加在每一二级索引的后面，这样会导致数据冗余严重，特别是二级索引建多了的情况下，有时会导致索引的数据比表的数据还大！</li>
 <li>其次，这样产生UUID是无序的，导致插入性能很差。因为当插入一个数据到B+tree时，系统将这个数据插入到一个合适的位置，这会导致多次IO，而如果数据本身是自增的，那么系统只须将它添加的B+Tree的末端即可，效率要高的多。</li>
 </ul>
-<p>因此我还是建议使用整型+auto_increment, 虽然MySQLauto_increment有个众所周知的、历史悠久的bug（这个bug终于在MySQL8的到修复，MySQL8中auto_increment将会被写入redo log 中啦，爽歪歪），但大多数情况下还是可靠的，并且MySQL官方也建议使用auto_incremnet做主键。但它也有问题，就是无法适应数据分片的扩容（分库分表），除非你之前规划的非常好。</p>
+<p>因此我还是建议使用整型+auto_increment, 虽然MySQLauto_increment有个众所周知的、历史悠久的bug（这个bug终于在MySQL8的到修复，MySQL8中auto_increment将会被写入redo log 中），但大多数情况下还是没有问题的（这也是官方迟迟没有修复的原因吧），并且MySQL官方也建议使用auto_incremnet做主键。但它也有问题，就是无法适应数据分片的扩容（分库分表），除非你之前规划的非常好。</p>
 <h4 id="MySQL8中的解决方案"><a href="#MySQL8中的解决方案" class="headerlink" title="MySQL8中的解决方案"></a>MySQL8中的解决方案</h4><p>如今MySQL8 中对UUID提供了增强性支持，不仅使其长度大大缩小，而且解决了顺序的问题！（我之所以称之为增强性支持，是因为他们提供了两个内置函数做了转换，感觉这种方式有点儿low,这样的函数我们也可以写啊）</p>
 <p>大家都知道，UUID是由32位16进制字符串组成（不算分隔符’-‘）如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">62ab1547-710f-11e8-9a58-5254007205d6</span><br></pre></td></tr></table></figure></p>
 <p>如果直接保存，则需要32个字符，utf8编码下占用96个字节，对于主键来说还是太长。幸运的是UUID中的每个字符都是16进制字符，两个16进制字符占用一个字节，这样可以轻松将UUID转换为binary(16),占用16个字节，所需空间大大减少，而且二进制字符串检索对比效率很高。</p>

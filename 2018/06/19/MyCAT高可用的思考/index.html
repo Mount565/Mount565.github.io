@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="MyCAT在分库分表和读写分离领域给出了较为完善的解决方案，特别是分表规则，MyCAT团队积极探索实现十几种分表分表规则，对业界做出了巨大的贡献。  在高可用领域MyCAT也有实现，可惜实现的比较粗糙，还不能达到一个生产可用的级别。  MyCAT的高可用实现 通过在schema.xml配置文件中，多">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-19T09:56:50.727Z">
+<meta property="og:updated_time" content="2018-06-20T11:08:56.804Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MyCAT高可用的思考">
 <meta name="twitter:description" content="MyCAT在分库分表和读写分离领域给出了较为完善的解决方案，特别是分表规则，MyCAT团队积极探索实现十几种分表分表规则，对业界做出了巨大的贡献。  在高可用领域MyCAT也有实现，可惜实现的比较粗糙，还不能达到一个生产可用的级别。  MyCAT的高可用实现 通过在schema.xml配置文件中，多">
@@ -183,7 +183,7 @@
 <li>它会判断与其它从节点相比，该节点是否复制到最新的事务（相对于几个从节点来说）。如果不是，它会把该节点配置成含有更新事务的从节点的从节点，复制到最新的事务。然后再将其提升为master.</li>
 </ol>
 <p>mysqlfailover不能自动做到binlog补偿（像MHA那样）,但利用mysql5.7的增强半同步，设置slave永不退化为异步，一样可以做到像mha那样0事务丢失切换（其实比MHA更好，因为当主库的操作系统挂掉时，mha是无法binlog补偿的，在mysql5.7增强半同步下，MHA的binlog补偿方式不再是优选）。slave相关半同步配置：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rpl_semi_sync_master_wait_for_slave_count=1</span><br><span class="line">rpl_semi_sync_master_wait_no_slave=ON</span><br><span class="line">rpl_semi_sync_master_timeout=1000000000000000000</span><br><span class="line">rpl_semi_sync_master_wait_point=AFTER_SYNC</span><br></pre></td></tr></table></figure></p>
-<p>这种方案下，从节点一定要&gt;1, 不然万一有网络问题（或从节点挂掉）造成从节点无法及时向master发送ack,会造成主库的事务挂起，影响业务。</p>
+<p>这种方案下，从节点数量一定要&gt;1, 不然万一有网络问题（或从节点挂掉）造成从节点无法及时向master发送ack,主库等待而不超时，事务被挂起，业务无法继续。</p>
 <p>mysqlfailover的实现思路完全可以做到MyCAT里面，再结合mysql5.7的增强半同步，这样一个高可用结构就接近完美了（不敢说完美）！</p>
 
             </div>
