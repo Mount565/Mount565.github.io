@@ -172,7 +172,7 @@
             
 
             
-              Group replication有single-primary和multi-primary两种使用模式，其区别就是单点写和多点写。就算启用muti-primary模式,实际应用还是可以单点写入，这样使得failove更快更方便。因为multi-master不用选举新的主节点，当一个writer节点
+              Group replication有single-primary和multi-primary两种使用模式，其区别就是单点写和多点写。即使启用muti-primary模式,实际应用还是应该单点写入，而开启multi-primary只是为了使得failove更快更方便。因为multi-primary不用
           <div class="read-more">
             <a href="/2018/06/21/Group-Replicatoin-Multi-Primary测试/" class="cust-link">Read more</a>
           </div>
