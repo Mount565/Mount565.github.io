@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="MySQL中的open_files_limit"/>
+
+
+
+
+  <meta name="keywords" content="MySQL," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/06/27/MySQL中的open-files-limit/"/>
+
+
+<meta name="description" content="open_files_limit 是mysql中的一个全局变量且不可动态修改。它控制着mysqld进程能使用的最大文件描述(FD)符数量。需要注意的是这个变量的值并不一定是你设定的值，mysqld会在系统允许的情况下尽量获取更多的FD数量。  首先我们看下官方文档的定义：  The number o">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL中的open_files_limit">
+<meta property="og:url" content="https://dbalife.info/2018/06/27/MySQL中的open-files-limit/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="open_files_limit 是mysql中的一个全局变量且不可动态修改。它控制着mysqld进程能使用的最大文件描述(FD)符数量。需要注意的是这个变量的值并不一定是你设定的值，mysqld会在系统允许的情况下尽量获取更多的FD数量。  首先我们看下官方文档的定义：  The number o">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-27T14:24:37.603Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL中的open_files_limit">
+<meta name="twitter:description" content="open_files_limit 是mysql中的一个全局变量且不可动态修改。它控制着mysqld进程能使用的最大文件描述(FD)符数量。需要注意的是这个变量的值并不一定是你设定的值，mysqld会在系统允许的情况下尽量获取更多的FD数量。  首先我们看下官方文档的定义：  The number o">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> MySQL中的open_files_limit - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          MySQL中的open_files_limit
+        
+      </h1>
+
+      <time class="post-time">
+          Jun 27 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>open_files_limit 是mysql中的一个全局变量且不可动态修改。它控制着mysqld进程能使用的最大文件描述(FD)符数量。需要注意的是这个变量的值并不一定是你设定的值，mysqld会在系统允许的情况下尽量获取更多的FD数量。</p>
+<p>首先我们看下官方文档的定义：</p>
+<blockquote>
+<p>The number of files that the operating system permits mysqld to open. The value of this variable at<br>runtime is the real value permitted by the system and might be different from the value you specify at<br>server startup. The value is 0 on systems where MySQL cannot change the number of open files.</p>
+</blockquote>
+<blockquote>
+<p>The effective open_files_limit value is based on the value specified at system startup (if any) and<br>the values of max_connections and table_open_cache, using these formulas:</p>
+</blockquote>
+<blockquote>
+<p>1)10 + max_connections + (table_open_cache <em> 2)<br>2)max_connections </em> 5<br>3)open_files_limit value specified at startup, 5000 if none</p>
+</blockquote>
+<p>mysqld在启动的时候，根据上述三种算法对该变量进行调整，并取三种算法中的最大值。也就是说最终确定的open_files_limit 可能比你设定的大，也可能小。<br>下面我们再瞅一眼源码(mysqld.cc)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">  Adjust @c open_files_limit.</span><br><span class="line">  Computation is  based on:</span><br><span class="line">  - @c max_connections,</span><br><span class="line">  - @c table_cache_size,</span><br><span class="line">  - the platform max open file limit.</span><br><span class="line">*/</span><br><span class="line">void adjust_open_files_limit(ulong *requested_open_files)</span><br><span class="line">&#123;</span><br><span class="line">  ulong limit_1;</span><br><span class="line">  ulong limit_2;</span><br><span class="line">  ulong limit_3;</span><br><span class="line">  ulong request_open_files;</span><br><span class="line">  ulong effective_open_files;</span><br><span class="line"></span><br><span class="line">  /* MyISAM requires two file handles per table. */</span><br><span class="line">  limit_1= 10 + max_connections + table_cache_size * 2;</span><br><span class="line"></span><br><span class="line">  /*</span><br><span class="line">    We are trying to allocate no less than max_connections*5 file</span><br><span class="line">    handles (i.e. we are trying to set the limit so that they will</span><br><span class="line">    be available).</span><br><span class="line">  */</span><br><span class="line">  limit_2= max_connections * 5;</span><br><span class="line">/* Try to allocate no less than 5000 by default. */</span><br><span class="line">  limit_3= open_files_limit ? open_files_limit : 5000;</span><br><span class="line"></span><br><span class="line">  request_open_files= max&lt;ulong&gt;(max&lt;ulong&gt;(limit_1, limit_2), limit_3);</span><br><span class="line"></span><br><span class="line">  /* Notice: my_set_max_open_files() may return more than requested. */</span><br><span class="line">  effective_open_files= my_set_max_open_files(request_open_files);</span><br><span class="line">//最终确定的值可能会比你设定的值大，也可能小。 如果小的话下面这段代码是打出两个警告信息。大的话当然没关系啦。</span><br><span class="line">  if (effective_open_files &lt; request_open_files)</span><br><span class="line">  &#123;</span><br><span class="line">    if (open_files_limit == 0)</span><br><span class="line">    &#123;</span><br><span class="line">      sql_print_warning(&quot;Changed limits: max_open_files: %lu (requested %lu)&quot;,</span><br><span class="line">                        effective_open_files, request_open_files);</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      sql_print_warning(&quot;Could not increase number of max_open_files to &quot;</span><br><span class="line">                        &quot;more than %lu (request: %lu)&quot;,</span><br><span class="line">                        effective_open_files, request_open_files);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  open_files_limit= effective_open_files;</span><br><span class="line">  if (requested_open_files)</span><br><span class="line">    *requested_open_files= min&lt;ulong&gt;(effective_open_files, request_open_files);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段源码很容易看懂，注释很详细，官方文档的解释与源码也很相符。按照三种算法，算出三个limit值，最后取其中最大的一个去设定这个变量。通过源码我们也可以看到open_files_limit，table_open_cache,max_connections这几个参数是密切相关的。</p>
+<p>open_files_limit这个参数应该在my.cnf中[mysqld_safe]中设定，因为mysqld_safe脚本读到这个变量会尝试执行ulimit -n 改变针对当前环境的FD limits. 然后在把这个变量传给mysqld,因此需要用root启动mysqld_safe，否则可能会无法修改成功（非root用户所使用的值不能超过hard limit）. 如果只是在[mysqld]中指定这个变量，可能会受限于系统对默认的设置而无法生效。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[mysqld_safe]</span><br><span class="line">core-file-size=10485760</span><br><span class="line">open-files-limit=10000</span><br></pre></td></tr></table></figure>
+<p>启动后可以看到，这个变量作为参数传递给了mysqld<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root     23344     1  0 11:16 pts/1    00:00:00 /bin/sh /usr/bin/mysqld_safe --datadir=/dbfiles/mysql_home/data --socket=/dbfiles/mysql_home/data/mysql.sock --pid-file=/var/run/mysqld/mysqld.pid --basedir=/usr --user=mysql</span><br><span class="line">mysql    24093 23344  0 11:29 pts/1    00:00:01 /usr/sbin/mysqld --basedir=/usr --datadir=/dbfiles/mysql_home/data --plugin-dir=/usr/lib64/mysql/plugin --user=mysql --log-error=/dbfiles/mysql_home/data/mysqld.err --open-files-limit=10000 --pid-file=/var/run/mysqld/mysqld.pid --socket=/dbfiles/mysql_home/data/mysql.sock --port=3306</span><br></pre></td></tr></table></figure></p>
+<p>查看该进程的FD limits. 发现已改变。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@stg-pxc-test01]/dbfiles:cat /proc/24093/limits</span><br><span class="line">Limit                     Soft Limit           Hard Limit           Units</span><br><span class="line">Max cpu time              unlimited            unlimited            seconds</span><br><span class="line">Max file size             unlimited            unlimited            bytes</span><br><span class="line">Max data size             unlimited            unlimited            bytes</span><br><span class="line">Max stack size            10485760             unlimited            bytes</span><br><span class="line">Max core file size        5368709120           5368709120           bytes</span><br><span class="line">Max resident set          unlimited            unlimited            bytes</span><br><span class="line">Max processes             31403                31403                processes</span><br><span class="line">Max open files            10000                10000                files</span><br><span class="line">Max locked memory         65536                65536                bytes</span><br><span class="line">Max address space         unlimited            unlimited            bytes</span><br><span class="line">Max file locks            unlimited            unlimited            locks</span><br><span class="line">Max pending signals       31403                31403                signals</span><br><span class="line">Max msgqueue size         819200               819200               bytes</span><br><span class="line">Max nice priority         0                    0</span><br><span class="line">Max realtime priority     0                    0</span><br><span class="line">Max realtime timeout      unlimited            unlimited            us</span><br></pre></td></tr></table></figure></p>
+<p>我们再看下mysqld_safe的shell片段<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">if test -w / -o &quot;$USER&quot; = &quot;root&quot;</span><br><span class="line">then</span><br><span class="line">  if test &quot;$user&quot; != &quot;root&quot; -o $SET_USER = 1</span><br><span class="line">  then</span><br><span class="line">    USER_OPTION=&quot;--user=$user&quot;</span><br><span class="line">  fi</span><br><span class="line">  # Change the err log to the right user, if it is in use</span><br><span class="line">  if [ $want_syslog -eq 0 ]; then</span><br><span class="line">    touch &quot;$err_log&quot;</span><br><span class="line">    chown $user &quot;$err_log&quot;</span><br><span class="line">  fi</span><br><span class="line">  if test -n &quot;$open_files&quot;</span><br><span class="line">  then</span><br><span class="line">    ulimit -n $open_files</span><br><span class="line">  fi</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if test -n &quot;$open_files&quot;</span><br><span class="line">then</span><br><span class="line">  append_arg_to_args &quot;--open-files-limit=$open_files&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>由这段shell片段，我们可以看到，如果/目录不可写，或者用户不是root,设置文件描述符限制的操作就跳过去了。只有满足上面的判断条件，才会设置，并在设置完FD limits后，又把这个参数值通过–open-files-limit传给了mysqld.</p>
+<p>CentOS 7使用了systemd管理进程，安装mysql时mysqld_safe不再被安装。若要配置open_file_limit可通过systemctl edit mysqld， 编辑service模块(或手工创建文件override.conf于目录/etc/systemd/system/mysqld.service.d下)。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[Service]</span><br><span class="line">LimitNOFILE=max_open_files</span><br><span class="line">PIDFile=/path/to/pid/file</span><br><span class="line">Nice=nice_level</span><br><span class="line">LimitCore=core_file_limit</span><br><span class="line">Environment=&quot;LD_PRELOAD=/path/to/malloc/library&quot;</span><br><span class="line">Environment=&quot;TZ=time_zone_setting&quot;</span><br></pre></td></tr></table></figure></p>
+<p>如此便可与mysqld_safe一样修改open_files_limit了.</p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL/">MySQL</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/06/26/MySQL-5-7中MDL锁排查/">
+        <span class="next-text nav-default">MySQL 5.7中MDL锁排查</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">12</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
