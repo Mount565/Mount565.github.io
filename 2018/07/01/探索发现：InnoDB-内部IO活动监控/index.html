@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="探索发现：InnoDB 内部IO活动监控"/>
+
+
+
+
+  <meta name="keywords" content="MySQL," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/07/01/探索发现：InnoDB-内部IO活动监控/"/>
+
+
+<meta name="description" content="在innodb提供的状态变量中，有几个反应内部IO情况的状态变量，对诊断瓶颈非常重要。这几个变量都不是计数器，而是瞬时值，反应当前的瞬时状态。官方文件解释非常少，这里详细解释一下。 1 2 3 4 5 6 7 8 9 10 11   mysql&amp;gt; show global status like &apos;I">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="探索发现：InnoDB 内部IO活动监控">
+<meta property="og:url" content="https://dbalife.info/2018/07/01/探索发现：InnoDB-内部IO活动监控/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="在innodb提供的状态变量中，有几个反应内部IO情况的状态变量，对诊断瓶颈非常重要。这几个变量都不是计数器，而是瞬时值，反应当前的瞬时状态。官方文件解释非常少，这里详细解释一下。 1 2 3 4 5 6 7 8 9 10 11   mysql&amp;gt; show global status like &apos;I">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://dbalife.info/images/innodb_pending_io_status3.png">
+<meta property="og:image" content="https://dbalife.info/images/innodb_pending_io_status.png">
+<meta property="og:updated_time" content="2018-07-01T02:16:07.010Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="探索发现：InnoDB 内部IO活动监控">
+<meta name="twitter:description" content="在innodb提供的状态变量中，有几个反应内部IO情况的状态变量，对诊断瓶颈非常重要。这几个变量都不是计数器，而是瞬时值，反应当前的瞬时状态。官方文件解释非常少，这里详细解释一下。 1 2 3 4 5 6 7 8 9 10 11   mysql&amp;gt; show global status like &apos;I">
+<meta name="twitter:image" content="https://dbalife.info/images/innodb_pending_io_status3.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 探索发现：InnoDB 内部IO活动监控 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          探索发现：InnoDB 内部IO活动监控
+        
+      </h1>
+
+      <time class="post-time">
+          Jul 01 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>在innodb提供的状态变量中，有几个反应内部IO情况的状态变量，对诊断瓶颈非常重要。这几个变量都不是计数器，而是瞬时值，反应当前的瞬时状态。官方文件解释非常少，这里详细解释一下。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show global status like &apos;Innodb_%pending%&apos;;</span><br><span class="line">+------------------------------+-------+</span><br><span class="line">| Variable_name                | Value |</span><br><span class="line">+------------------------------+-------+</span><br><span class="line">| Innodb_data_pending_fsyncs   | 0     |</span><br><span class="line">| Innodb_data_pending_reads    | 0     |</span><br><span class="line">| Innodb_data_pending_writes   | 0     |</span><br><span class="line">| Innodb_os_log_pending_fsyncs | 0     |</span><br><span class="line">| Innodb_os_log_pending_writes | 0     |</span><br><span class="line">+------------------------------+-------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>Innodb_data_pending_fsyncs<br>当前调用fsync()函数挂起的操作数。是将脏数据刷入表空间的操作中产生的。它反应了磁盘随机写入的性能。如果经常看到它的值是0，说明磁盘性能很好，IO很流畅。否则就是磁盘性能不佳，随机写入经常受阻。（写入doublewrite buffer 是顺序写入，只需一次fsync.写入double write buffer 成功后，再将各个page写入表空间合适的位置，这个操作是随机的，需要多次调用fsync）</li>
+<li>Innodb_data_pending_reads<br>当前，在将表空间数据读入buffer pool过程中，io被挂起的数量。它反应了磁盘随机读的性能。如果经常看看到它大于0，则说明磁盘随机读取性能很差。不要以为事务是写入，而它是读取，对事务影响不大。其实是相当大！要知道，一个事务要修改数据，所修改的数据必须在buffer pool中存在，若干不存在，就需要将数据从表空间文件读入buffer pool  然后再修改。许多事务的延时都是卡在这一步，因为对表空间的读取是随机IO， 如果磁盘随机IO很差，tps就会受到严重影响。遇到这种问题，可以通过增大buffer pool来缓解。</li>
+<li>Innodb_data_pending_writes<br>当前将脏数据写入表空间被挂起的次数。官方文档解释也就这一句话，它是只写入文件系统，并未刷盘，挂起的次数。它反应的意义与Innodb_data_pending_fsyncs类似。如果经常看到他们的值大于0，可通过增大redo log 减少checkpoint的频率来缓解。</li>
+<li>Innodb_os_log_pending_fsyncs<br>当前redo log 刷盘遭挂起的次数。如果它的值经常大于0，则说明磁盘顺序写性能不佳。优化办法只有更换顺序写性能更强的磁盘。因为这里是事务的咽喉，没有其它办法！</li>
+<li>Innodb_os_log_pending_writes<br>当前redo log 写入文件系统挂起的次数。它和Innodb_os_log_pending_fsyncs意义相同。</li>
+</ul>
+<p>压测优化过程中，应密切关注这几个变量的变化，以准确找出瓶颈点，给出合理的优化措施。鉴于这几个状态对于诊断IO瓶颈非常重要，我提供一个脚本，实时获取这几个变量值，并绘制成曲线图，压测的过程中可直观反应innoDB内部的IO状况。有些zabbix监控模版（如PMM）会动态获取这些数据，并绘制成图，那就更方便了。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> monitor_innodb_pending_io_status.sh</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> Usage: monitor_innodb_pending_io_status.sh -u <span class="built_in">test</span> -p <span class="built_in">test</span> -h 192.168.21.2 -P 3306 -i 1 -m 300</span></span><br><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/bash</span></span><br><span class="line"> set -e</span><br><span class="line">user=test</span><br><span class="line">passwd=test</span><br><span class="line">host=192.168.216.183</span><br><span class="line">port=3306</span><br><span class="line">interval=1</span><br><span class="line">maxTime=300</span><br><span class="line"></span><br><span class="line">function fillArgs()&#123;</span><br><span class="line">  while getopts u:p:h:P:i:m: opt;do</span><br><span class="line">      case $opt in</span><br><span class="line">          u) user="$OPTARG" ;;</span><br><span class="line">          p) passwd="$OPTARG" ;;</span><br><span class="line">          h) host="$OPTARG" ;;</span><br><span class="line">          P) port="$OPTARG" ;;</span><br><span class="line">          i) interval="$OPTARG" ;;</span><br><span class="line">          m) maxTime="$OPTARG" ;;</span><br><span class="line">      \?) echo "Invalid params ; only -u(user),-p(password) -h(host) -P(port) -i(interval) -m(max running time in secs)are accepted.";exit 1 ;;</span><br><span class="line">    esac</span><br><span class="line">  done</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fillArgs $@</span><br><span class="line"></span><br><span class="line">mysqlcmd="mysql -u$user -p$passwd -h$host -P$port"</span><br><span class="line">data=/tmp/innodb_pending_io_status.data</span><br><span class="line">echo "#interval_times Innodb_data_pending_fsyncs Innodb_data_pending_reads Innodb_data_pending_writes Innodb_os_log_pending_fsyncs Innodb_os_log_pending_writes"&gt; $data</span><br><span class="line">i=1</span><br><span class="line">while :; do</span><br><span class="line">    $mysqlcmd  -e "show global status like 'innodb_%pending%'" 2&gt;/dev/null | awk -v iv="$i" 'BEGIN&#123;dpf;dpr;dpw;lpf;lpw;&#125;&#123;if($1~/Innodb_data_pending_fsyncs/)&#123;dpf=$2;&#125;else if($1~/Innodb_data_pending_reads/)&#123;dpr=$2;&#125;else if($1~/Innodb_data_pending_writes/)&#123;dpw=$2;&#125;else if($1~/Innodb_os_log_pending_fsyncs/)&#123;lpf=$2;&#125;else if($1~/Innodb_os_log_pending_writes/)&#123;lpw=$2;&#125;&#125;END&#123;print iv, dpf,dpr,dpw,lpf,lpw&#125;' &gt;&gt; $data 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line">   t=`expr $i \* $interval`</span><br><span class="line">   if [ $t -ge $maxTime ];then</span><br><span class="line">       break;</span><br><span class="line">   fi</span><br><span class="line"></span><br><span class="line">    sleep $interval</span><br><span class="line">    i=`expr $i + 1`</span><br><span class="line"></span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">gnuplot &lt;&lt;EOF</span><br><span class="line">set encoding utf8</span><br><span class="line">set terminal pngcairo enhanced size 50in,14in</span><br><span class="line">set output "innodb_pending_io_status.png"</span><br><span class="line">set key bmargin center horizontal Right noreverse enhanced autotitles box linetype -1 linewidth 1.000</span><br><span class="line">set title "Innodb pending io status"</span><br><span class="line">set ylabel "Pending times"</span><br><span class="line">set xlabel "Interval"</span><br><span class="line">set grid</span><br><span class="line">plot "$data" using 1:2  with linespoints title "Innodb data pending fsyncs", "$data" using 1:3  with linespoints title "Innodb data pending reads","$data" using 1:4  with linespoints title "Innodb data pending writes","$data" using 1:5  with linespoints title "Innodb os log pending fsyncs" , "$data" using 1:6  with linespoints title "Innodb os log pending writes"</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></p>
+<p>展示一个性能瓶颈严重的系统：<br><img src="/images/innodb_pending_io_status3.png" alt="image"><br>通过将innodb_flush_log_at_commit设置为2，os_log_fsync_pending大为好转。<br><img src="/images/innodb_pending_io_status.png" alt="image"></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL/">MySQL</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/06/28/MySQL运维中长事务和锁等待排查/">
+        <span class="next-text nav-default">MySQL运维中长事务和锁等待排查</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">14</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
