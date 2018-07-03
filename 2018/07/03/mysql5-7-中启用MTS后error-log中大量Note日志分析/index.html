@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="mysql5.7,启用基于logical_clock的多线程复制,发现error日志增长很快，查看日志发现大量关于多线程复制的Note级别日志。 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15   2018-07-03T03:22:01.638371+08:00 8941 [">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-07-03T13:16:13.064Z">
+<meta property="og:updated_time" content="2018-07-03T13:42:08.649Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql5.7 中启用MTS后error log中大量Note日志分析">
 <meta name="twitter:description" content="mysql5.7,启用基于logical_clock的多线程复制,发现error日志增长很快，查看日志发现大量关于多线程复制的Note级别日志。 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15   2018-07-03T03:22:01.638371+08:00 8941 [">
@@ -175,10 +175,9 @@
 <ol>
 <li>rli-&gt;is_parallel_exec() 这是个inline函数，它判断是否在使用多线程复制</li>
 <li>rli-&gt;mts_events_assigned % 1024 == 1 多线程执行的event个数刚刚超过1024个。也就是说按evnet个数来算，每隔1024个event打印一次。</li>
-<li>最后还有个时间限制：(my_now - rli-&gt;mts_last_online_stat) &gt;=<pre><code>mts_online_stat_period，距离上一次统计超过既定的间隔mts_online_stat_period。这个变量是60*2 ,代码里写死了。
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">  Statistics go to the error log every # of seconds when --log-warnings &gt; 1</span><br><span class="line">*/</span><br><span class="line">const long mts_online_stat_period= 60 * 2;</span><br></pre></td></tr></table></figure>
-</li>
+<li>最后还有个时间限制：(my_now - rli-&gt;mts_last_online_stat) &gt;= mts_online_stat_period，距离上一次统计超过既定的间隔mts_online_stat_period。这个变量是60*2 ,代码里写死了。</li>
 </ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">  Statistics go to the error log every # of seconds when --log-warnings &gt; 1</span><br><span class="line">*/</span><br><span class="line">const long mts_online_stat_period= 60 * 2;</span><br></pre></td></tr></table></figure>
 <p>由此可以判断，这个日志打印频率最少为2分钟，没法改了。但上面的代码注释中给了提示，当–log-warnings &gt; 1时，这个统计间隔才生效，意味着可以通过修改日志打印级别来控制。</p>
 <p>自mysql5.7.2，log-warnings被废弃，引用了新的变量log_error_verbosity。这个变量有三个值：1、2、3，默认是3. 他们的意义是：<br>1 – Errors Only<br>2 – Errors and warnings<br>3 – Errors, warnings, and notes</p>
 <p>我们可以修改这个变量为2 ，不再打印Note信息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set global log_error_verbosity=2;</span><br></pre></td></tr></table></figure></p>
