@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="mysql5.7 中启用MTS后error log中大量Note日志分析"/>
+
+
+
+
+  <meta name="keywords" content="MySQL," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/07/03/mysql5-7-中启用MTS后error-log中大量Note日志分析/"/>
+
+
+<meta name="description" content="mysql5.7,启用基于logical_clock的多线程复制,发现error日志增长很快，查看日志发现大量关于多线程复制的Note级别日志。 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15   2018-07-03T03:22:01.638371+08:00 8941 [">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql5.7 中启用MTS后error log中大量Note日志分析">
+<meta property="og:url" content="https://dbalife.info/2018/07/03/mysql5-7-中启用MTS后error-log中大量Note日志分析/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="mysql5.7,启用基于logical_clock的多线程复制,发现error日志增长很快，查看日志发现大量关于多线程复制的Note级别日志。 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15   2018-07-03T03:22:01.638371+08:00 8941 [">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-07-03T13:16:13.064Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql5.7 中启用MTS后error log中大量Note日志分析">
+<meta name="twitter:description" content="mysql5.7,启用基于logical_clock的多线程复制,发现error日志增长很快，查看日志发现大量关于多线程复制的Note级别日志。 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15   2018-07-03T03:22:01.638371+08:00 8941 [">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> mysql5.7 中启用MTS后error log中大量Note日志分析 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          mysql5.7 中启用MTS后error log中大量Note日志分析
+        
+      </h1>
+
+      <time class="post-time">
+          Jul 03 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>mysql5.7,启用基于logical_clock的多线程复制,发现error日志增长很快，查看日志发现大量关于多线程复制的Note级别日志。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">2018-07-03T03:22:01.638371+08:00 8941 [Note] Multi-threaded slave statistics for channel &apos;&apos;: seconds elapsed = 298; events assigned = 3043329; worker queues filled over ove</span><br><span class="line">rrun level = 0; waited due a Worker queue full = 0; waited due the total size = 0; waited at clock conflicts = 725810947700 waited (count) when Workers occupied = 5346 wait</span><br><span class="line">ed when Workers occupied = 0</span><br><span class="line">2018-07-03T03:24:22.589147+08:00 8941 [Note] Multi-threaded slave statistics for channel &apos;&apos;: seconds elapsed = 141; events assigned = 3044353; worker queues filled over ove</span><br><span class="line">rrun level = 0; waited due a Worker queue full = 0; waited due the total size = 0; waited at clock conflicts = 725810947700 waited (count) when Workers occupied = 5346 wait</span><br><span class="line">ed when Workers occupied = 0</span><br><span class="line">2018-07-03T03:27:00.554437+08:00 8941 [Note] Multi-threaded slave statistics for channel &apos;&apos;: seconds elapsed = 158; events assigned = 3045377; worker queues filled over ove</span><br><span class="line">rrun level = 0; waited due a Worker queue full = 0; waited due the total size = 0; waited at clock conflicts = 725818557700 waited (count) when Workers occupied = 5346 wait</span><br><span class="line">ed when Workers occupied = 0</span><br><span class="line">2018-07-03T03:32:00.079699+08:00 8941 [Note] Multi-threaded slave statistics for channel &apos;&apos;: seconds elapsed = 300; events assigned = 3047425; worker queues filled over ove</span><br><span class="line">rrun level = 0; waited due a Worker queue full = 0; waited due the total size = 0; waited at clock conflicts = 725846344900 waited (count) when Workers occupied = 5346 wait</span><br><span class="line">ed when Workers occupied = 0</span><br><span class="line">2018-07-03T03:34:04.567887+08:00 8941 [Note] Multi-threaded slave statistics for channel &apos;&apos;: seconds elapsed = 124; events assigned = 3048449; worker queues filled over ove</span><br><span class="line">rrun level = 0; waited due a Worker queue full = 0; waited due the total size = 0; waited at clock conflicts = 725852036800 waited (count) when Workers occupied = 5346 wait</span><br><span class="line">ed when Workers occupied = 0</span><br></pre></td></tr></table></figure></p>
+<p>通过日期可以看到，日志的打印频率大概在3分钟左右。error log是mysql 出现问题时的重要分析日志，大量的note日志可能很快就把重要日志信息埋没,给分析日志信息带来了不便。而且日志量随时间递增，还必须有rotate机制，不然占用大量磁盘空间。那么这个日志的打印频率能不能调低一些呢？</p>
+<p>我看了下源码这块的实现(rpl_slave.cc 4800)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">*ptr_ev= NULL; // announcing the event is passed to w-worker</span><br><span class="line"> </span><br><span class="line">     if (rli-&gt;is_parallel_exec() &amp;&amp; rli-&gt;mts_events_assigned % 1024 == 1)</span><br><span class="line">     &#123;</span><br><span class="line">       time_t my_now= my_time(0);</span><br><span class="line"> </span><br><span class="line">       if ((my_now - rli-&gt;mts_last_online_stat) &gt;=</span><br><span class="line">           mts_online_stat_period)</span><br><span class="line">       &#123;</span><br><span class="line">         sql_print_information(&quot;Multi-threaded slave statistics%s: &quot;</span><br><span class="line">                               &quot;seconds elapsed = %lu; &quot;</span><br><span class="line">                               &quot;events assigned = %llu; &quot;</span><br><span class="line">                               &quot;worker queues filled over overrun level = %lu; &quot;</span><br><span class="line">                               &quot;waited due a Worker queue full = %lu; &quot;</span><br><span class="line">                               &quot;waited due the total size = %lu; &quot;</span><br><span class="line">                               &quot;waited at clock conflicts = %llu &quot;</span><br><span class="line">                               &quot;waited (count) when Workers occupied = %lu &quot;</span><br><span class="line">                               &quot;waited when Workers occupied = %llu&quot;,</span><br><span class="line">                               rli-&gt;get_for_channel_str(),</span><br><span class="line">                               static_cast&lt;unsigned long&gt;</span><br><span class="line">                               (my_now - rli-&gt;mts_last_online_stat),</span><br><span class="line">                               rli-&gt;mts_events_assigned,</span><br><span class="line">                               rli-&gt;mts_wq_overrun_cnt,</span><br><span class="line">                               rli-&gt;mts_wq_overfill_cnt,</span><br><span class="line">                               rli-&gt;wq_size_waits_cnt,</span><br><span class="line">                               rli-&gt;mts_total_wait_overlap,</span><br><span class="line">                               rli-&gt;mts_wq_no_underrun_cnt,</span><br><span class="line">                               rli-&gt;mts_total_wait_worker_avail);</span><br><span class="line">         rli-&gt;mts_last_online_stat= my_now;</span><br></pre></td></tr></table></figure></p>
+<p>我们从两个if语句可以看到，这个信息的打印受三个条件的控制：</p>
+<ol>
+<li>rli-&gt;is_parallel_exec() 这是个inline函数，它判断是否在使用多线程复制</li>
+<li>rli-&gt;mts_events_assigned % 1024 == 1 多线程执行的event个数刚刚超过1024个。也就是说按evnet个数来算，每隔1024个event打印一次。</li>
+<li>最后还有个时间限制：(my_now - rli-&gt;mts_last_online_stat) &gt;=<pre><code>mts_online_stat_period，距离上一次统计超过既定的间隔mts_online_stat_period。这个变量是60*2 ,代码里写死了。
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">  Statistics go to the error log every # of seconds when --log-warnings &gt; 1</span><br><span class="line">*/</span><br><span class="line">const long mts_online_stat_period= 60 * 2;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>由此可以判断，这个日志打印频率最少为2分钟，没法改了。但上面的代码注释中给了提示，当–log-warnings &gt; 1时，这个统计间隔才生效，意味着可以通过修改日志打印级别来控制。</p>
+<p>自mysql5.7.2，log-warnings被废弃，引用了新的变量log_error_verbosity。这个变量有三个值：1、2、3，默认是3. 他们的意义是：<br>1 – Errors Only<br>2 – Errors and warnings<br>3 – Errors, warnings, and notes</p>
+<p>我们可以修改这个变量为2 ，不再打印Note信息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set global log_error_verbosity=2;</span><br></pre></td></tr></table></figure></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL/">MySQL</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/07/01/探索发现：InnoDB-内部IO活动监控/">
+        <span class="next-text nav-default">探索发现：InnoDB 内部IO活动监控</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">15</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
