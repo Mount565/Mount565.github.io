@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="MySQL新一代HA架构：mysqlfailove + semisync of mysql5.7"/>
+
+
+
+
+  <meta name="keywords" content="MySQL,HA," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/07/06/MySQL新一代HA架构：mysqlfailove-semisync-of-mysql5-7/"/>
+
+
+<meta name="description" content="使用mysql5.7 增强半同步，GTID复制，设置master wait永不超时，外加mysqlfailover自动切换。可实现新一代高可用架构，零事务丢失自动切换！  搭建步骤  1. 搭建一主两从（至少两从）增强半同步架构（安装略）。     master 半同步配置用不超时：">
+<meta name="keywords" content="MySQL,HA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL新一代HA架构：mysqlfailove + semisync of mysql5.7">
+<meta property="og:url" content="https://dbalife.info/2018/07/06/MySQL新一代HA架构：mysqlfailove-semisync-of-mysql5-7/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="使用mysql5.7 增强半同步，GTID复制，设置master wait永不超时，外加mysqlfailover自动切换。可实现新一代高可用架构，零事务丢失自动切换！  搭建步骤  1. 搭建一主两从（至少两从）增强半同步架构（安装略）。     master 半同步配置用不超时：">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-07-06T12:58:46.066Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL新一代HA架构：mysqlfailove + semisync of mysql5.7">
+<meta name="twitter:description" content="使用mysql5.7 增强半同步，GTID复制，设置master wait永不超时，外加mysqlfailover自动切换。可实现新一代高可用架构，零事务丢失自动切换！  搭建步骤  1. 搭建一主两从（至少两从）增强半同步架构（安装略）。     master 半同步配置用不超时：">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> MySQL新一代HA架构：mysqlfailove + semisync of mysql5.7 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          MySQL新一代HA架构：mysqlfailove + semisync of mysql5.7
+        
+      </h1>
+
+      <time class="post-time">
+          Jul 06 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>使用mysql5.7 增强半同步，GTID复制，设置master wait永不超时，外加mysqlfailover自动切换。可实现新一代高可用架构，零事务丢失自动切换！</p>
+<h4 id="搭建步骤"><a href="#搭建步骤" class="headerlink" title="搭建步骤"></a>搭建步骤</h4><ol>
+<li><p>搭建一主两从（至少两从）增强半同步架构（安装略）。<br>master 半同步配置用不超时：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rpl_semi_sync_master_wait_for_slave_count=1</span><br><span class="line">rpl_semi_sync_master_wait_no_slave=ON</span><br><span class="line">rpl_semi_sync_master_timeout=1000000000000000000</span><br><span class="line">rpl_semi_sync_master_wait_point=AFTER_SYNC</span><br></pre></td></tr></table></figure>
+<p>salve 的my.cnf配置(主库也要配置，防止主库切换后，再次以从库的角色加入集群，无法被自动发现)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">report_host=&apos;172.40.0.164&apos; # the ip of the slave</span><br><span class="line">report_port=3306</span><br><span class="line">master_info_repository=TABLE</span><br></pre></td></tr></table></figure>
+<p>注意从库不能配置super_read_only=ON</p>
+</li>
+<li><p>在一台单独的监控机上安装mysqlfailover.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">wget -c https://cdn.mysql.com/archives/mysql-utilities/mysql-utilities-1.6.5-1.el7.noarch.rpm</span><br><span class="line"></span><br><span class="line">#mysqlfailover脚本依赖依赖mysql python connector</span><br><span class="line"></span><br><span class="line">wget -c https://dev.mysql.com/get/Downloads/Connector-Python/mysql-connector-python-2.1.7-1.el7.x86_64.rpm</span><br><span class="line"></span><br><span class="line">#安装：</span><br><span class="line">rpm -ivh mysql-connector-python-2.1.7-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-utilities-1.6.5-1.el7.noarch.rpm</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li><p>failover监控脚本账号创建。mysqlfailover脚本使用一个数据库账号去监控集群中各节点状态，如果主库故障，会启用自动切换，切换时脚本会执行change master 等操作,且所有节点需要此账号，因此需要在主库上创建。此账号权限较大，为安全起见，可使用login-path.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">create user fo@&apos;192.168.216.146&apos; identified by &apos;fo&apos;;</span><br><span class="line">grant SUPER, REPLICATION SLAVE, SELECT, RELOAD, DROP, CREATE, INSERT on *.* to fo@&apos;192.168.216.146&apos;  with grant option;</span><br></pre></td></tr></table></figure>
+<p>对于mysql5.7还需要授权：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grant update,delete on mysql.* to &apos;fo&apos;@&apos;192.168.216.146&apos;;</span><br></pre></td></tr></table></figure>
+<p>因为mysql 5.7中对于已经存在的账号，再次使用grant … identified by 需要修改mysql库中的相关表。</p>
+</li>
+<li><p>在监控节点配置login-path</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysql_config_editor set --login-path=fo --user=fo --host=192.168.216.144 --port=3306 --password</span><br><span class="line"># test login</span><br><span class="line">mysql --login-path=fo</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启动mysqlfailover</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlfailover --master=fo --discover-slaves-login=fo --log=/tmp/fo.log  --rpl-user=repl:repl  --force</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>mysqlfailover在第一次连接的时候，会在mysql库下面创建failover_console表，里面记录了所监控master的ip和端口。正常退出，这个表会被drop掉。但对于非正常退出，这个表会一直存在。如果下次再尝试连接，则会警告：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Multiple instances of failover console found for master 192.168.216.144:3306.</span><br><span class="line">If this is an error, restart the console with --force.</span><br><span class="line">Failover mode changed to &apos;FAIL&apos; for this instance.</span><br><span class="line">Console will start in 10 seconds..........starting Console.</span><br></pre></td></tr></table></figure>
+<p>上述信息是说mysqlfailover检查到已经有一个进程在运行了，因此这个进程的mode被修改为FAIL, FAIL mode的意思是该进程只监控，不会执行切换。如果确认只有一个mysqlfailover在运行，可以使用–force参数。这里需要说一下failover的三种模式：</p>
+<blockquote>
+<ul>
+<li>auto: (默认)。 自动切换模式。该模式在切换时，首先从candicate列表中选择，如果candicate列表的主机不可用，则会从其它的从节点选择一个作为新的master. 然后把新master配置为其它从节点的从库，复制缺少的事务，直到该master包含所有的事务（most update slave）</li>
+<li>elect: 该模式和auto模式类似，只是它只从candidate列表中选择。如果列表不可用则报错退出。使用该模式必须用–candidates选项。</li>
+<li>fail:该模式只监控，不执行切换。</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><ol>
+<li><p>停止主库，等待约10s左右，可以看到切换动作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">  Failed to reconnect to the master after 3 attemps.</span><br><span class="line">Failover starting in &apos;auto&apos; mode...</span><br><span class="line"># Candidate slave 192.168.216.145:3306 will become the new master.</span><br><span class="line"># Checking slaves status (before failover).</span><br><span class="line"># Preparing candidate for failover.</span><br><span class="line"># Creating replication user if it does not exist.</span><br><span class="line"># Stopping slaves.</span><br><span class="line"># Performing STOP on all slaves.</span><br><span class="line"># Switching slaves to new master.</span><br><span class="line"># Disconnecting new master as slave.</span><br><span class="line"># Starting slaves.</span><br><span class="line"># Performing START on all slaves.</span><br><span class="line"># Checking slaves for errors.</span><br><span class="line"># Failover complete.</span><br><span class="line"># Discovering slaves for master at 192.168.216.145:3306</span><br><span class="line"></span><br><span class="line">Failover console will restart in 5 seconds.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重新启动原来的主节点，然后将其作为从库加入集群：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlreplicate --master=fo:fo@192.168.216.145:3306 --slave=fo:fo@192.168.216.144:3306 --rpl-user=repl:repl</span><br></pre></td></tr></table></figure>
+<p>加入后，failover脚本很快就发现新节点，显示一主两从的架构。</p>
+</li>
+<li><p>重新启用原来的主节点为master</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">  mysqlrpladmin --master=fo:fo@192.168.216.145:3306 \</span><br><span class="line">&gt; --slaves=fo:fo@192.168.216.144:3306,fo:fo@192.168.216.147:3306  \</span><br><span class="line">&gt; --rpl-user=repl:repl --new-master=fo:fo@192.168.216.144:3306 --demote-master switchover</span><br><span class="line">WARNING: Using a password on the command line interface can be insecure.</span><br><span class="line"># Checking privileges.</span><br><span class="line"># Performing switchover from master at 192.168.216.145:3306 to slave at 192.168.216.144:3306.</span><br><span class="line"># Checking candidate slave prerequisites.</span><br><span class="line"># Checking slaves configuration to master.</span><br><span class="line"># Waiting for slaves to catch up to old master.</span><br><span class="line"># Stopping slaves.</span><br><span class="line"># Performing STOP on all slaves.</span><br><span class="line"># Demoting old master to be a slave to the new master.</span><br><span class="line"># Switching slaves to new master.</span><br><span class="line"># Starting all slaves.</span><br><span class="line"># Performing START on all slaves.</span><br><span class="line"># Checking slaves for errors.</span><br><span class="line"># Switchover complete.</span><br><span class="line">#</span><br><span class="line"># Replication Topology Health:</span><br><span class="line">+------------------+-------+---------+--------+------------+---------+</span><br><span class="line">| host             | port  | role    | state  | gtid_mode  | health  |</span><br><span class="line">+------------------+-------+---------+--------+------------+---------+</span><br><span class="line">| 192.168.216.144  | 3306  | MASTER  | UP     | ON         | OK      |</span><br><span class="line">| 192.168.216.145  | 3306  | SLAVE   | UP     | ON         | OK      |</span><br><span class="line">| 192.168.216.147  | 3306  | SLAVE   | UP     | ON         | OK      |</span><br><span class="line">+------------------+-------+---------+--------+------------+---------+</span><br><span class="line"># ...done.</span><br></pre></td></tr></table></figure>
+<p>切换后发现，failover脚本监控失败：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Replication Health Status</span><br><span class="line">+------------------+-------+---------+--------+------------+------------------------------------+</span><br><span class="line">| host             | port  | role    | state  | gtid_mode  | health                             |</span><br><span class="line">+------------------+-------+---------+--------+------------+------------------------------------+</span><br><span class="line">| 192.168.216.145  | 3306  | MASTER  | UP     | ON         | OK                                 |</span><br><span class="line">| 192.168.216.144  | 3306  | SLAVE   | WARN   |            | Slave is not connected to master.  |</span><br><span class="line">| 192.168.216.147  | 3306  | SLAVE   | WARN   |            | Slave is not connected to master.  |</span><br><span class="line">+------------------+-------+---------+--------+------------+------------------------------------+</span><br></pre></td></tr></table></figure>
+<p>看来这种情下必须重启mysqlfailover脚本！</p>
+<ol start="4">
+<li>使用sysbench 对主库压测,监控信息会显示延迟情况。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">  Replication Health Status</span><br><span class="line">+------------------+-------+---------+--------+------------+--------------------------------------------------------------------------------------------+</span><br><span class="line">| host             | port  | role    | state  | gtid_mode  | health                                                                                     |</span><br><span class="line">+------------------+-------+---------+--------+------------+--------------------------------------------------------------------------------------------+</span><br><span class="line">| 192.168.216.144  | 3306  | MASTER  | UP     | ON         | OK                                                                                         |</span><br><span class="line">| 192.168.216.145  | 3306  | SLAVE   | UP     | ON         | Slave delay is 6 seconds behind master., No, Slave has 3916 transactions behind master.    |</span><br><span class="line">| 192.168.216.147  | 3306  | SLAVE   | UP     | ON         | Slave delay is 59 seconds behind master., No, Slave has 33416 transactions behind master.  |</span><br><span class="line">+------------------+-------+---------+--------+------------+--------------------------------------------------------------------------------------------+</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>在主从复制延迟的情况下，停掉主库，查看failover脚本切换状况。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  Failed to reconnect to the master after 3 attemps.</span><br><span class="line">Failover starting in &apos;auto&apos; mode...</span><br><span class="line"># Candidate slave 192.168.216.145:3306 will become the new master.</span><br><span class="line"># Checking slaves status (before failover).</span><br><span class="line"># Preparing candidate for failover.</span><br></pre></td></tr></table></figure>
+<p>发现切换时间明显增长，在Preparing candidate for failover.等待。查看从库状态，发现有一个尚未应用完binlog，当所有从库都应用完binglog时，才正式切换。这对保证数据一致性很重要！mysqlfailover已经做到这一点儿了。另外如果切换时主从延迟严重，切换时间会较长，这可以通过启用MTS来缓解。</p>
+</li>
+</ol>
+<h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><ol>
+<li>切换后，从库被提升为master ， 但只读属性没有被取消。这会导致应用依然不能做业务。还一个问题是切换后，应该通知应用，连接新的master. (如修改DNS，或zookeeper中的masterIP,这取决于应用数据源的配置方式) 这些都可以通过脚本来实现。<br>mysqlfailover 提供了两个注入脚本的接口:<ul>
+<li>–exec-before=script ,在切换开始前执行。</li>
+<li>–exec-after=script  ， 在切换完成后执行。<br>这意味着我们可以在切换完成后写个脚本去修改新master的只读属性，已经通知应用修改数据源地址（使用vip来解决更为优雅，但有些云环境不支持vip）。</li>
+</ul>
+</li>
+<li>使用–daemon=start 启动脚本时，不能使用–daemon=stop来终止。会造成从库sql_thread报错断开。须使用kill -9 pid . 启动时，加–force参数。我已向官方递交此bug (<a href="https://bugs.mysql.com/bug.php?id=91562" target="_blank" rel="noopener">91562</a>)</li>
+</ol>
+<p>参考资料：</p>
+<p><a href="https://dev.mysql.com/doc/mysql-utilities/1.6/en/mysqlfailover.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/mysql-utilities/1.6/en/mysqlfailover.html</a></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL/">MySQL</a>
+		  
+			<a href="/tags/HA/">HA</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/07/03/mysql5-7-中启用MTS后error-log中大量Note日志分析/">
+        <span class="next-text nav-default">mysql5.7 中启用MTS后error log中大量Note日志分析</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">16</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
