@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="揭开Group Replication校验的神秘面纱"/>
+
+
+
+
+  <meta name="keywords" content="Group Replication,MySQL8,MGR," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/07/07/揭开Group-Replication校验的神秘面纱/"/>
+
+
+<meta name="description" content="在Group Replication 架构中，一个事务在某节点执行，commit之前，会把该事务的所产生的写集（writeset），交给group replication 去校验，看该事务是否与其它节点执行的事务相冲突，如果不冲突，本节点就会commit返回，其余节点就会把该事务的binlog ev">
+<meta name="keywords" content="Group Replication,MySQL8,MGR">
+<meta property="og:type" content="article">
+<meta property="og:title" content="揭开Group Replication校验的神秘面纱">
+<meta property="og:url" content="https://dbalife.info/2018/07/07/揭开Group-Replication校验的神秘面纱/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="在Group Replication 架构中，一个事务在某节点执行，commit之前，会把该事务的所产生的写集（writeset），交给group replication 去校验，看该事务是否与其它节点执行的事务相冲突，如果不冲突，本节点就会commit返回，其余节点就会把该事务的binlog ev">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-07-07T10:43:44.279Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="揭开Group Replication校验的神秘面纱">
+<meta name="twitter:description" content="在Group Replication 架构中，一个事务在某节点执行，commit之前，会把该事务的所产生的写集（writeset），交给group replication 去校验，看该事务是否与其它节点执行的事务相冲突，如果不冲突，本节点就会commit返回，其余节点就会把该事务的binlog ev">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> 揭开Group Replication校验的神秘面纱 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          揭开Group Replication校验的神秘面纱
+        
+      </h1>
+
+      <time class="post-time">
+          Jul 07 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>在Group Replication 架构中，一个事务在某节点执行，commit之前，会把该事务的所产生的写集（writeset），交给group replication 去校验，看该事务是否与其它节点执行的事务相冲突，如果不冲突，本节点就会commit返回，其余节点就会把该事务的binlog event写入relay log，由applier线程应用。注意，只有多主模式（multi primary）才需要做冲突校验，对于单主模式（single primary）则没有必要，因为不可能冲突！</p>
+<p>那么group replication 是如何校验的呢？ 事务间的冲突又是如何确定的呢?</p>
+<p>这个过程相当神秘，其实理解了又觉得其非常简单，但理解的过程很不简单！</p>
+<p>首先我们来看这个writeset 是个什么东西。所谓写集（writeset）就是就是一个事务执行所影响的具体数据行（用主键hash的值来标识），以及执行这个事务的时候，数据库的版本快照！又一个新概念，什么是数据库的版本快照？ 其实就是当前数据库已经执行了（commit）哪些事务,说白了就是gtid_executed的值。这样就好理解了。</p>
+<p>假如我们有一个事务T1，产生了如下WriteSet</p>
+<p>pk_v1 –      UUID:1-9<br>pk_v2 –      UUID:1-9</p>
+<p>这说明事务修改了两条数据， 执行节点的数据库快照是UUID:1-9.那么这样一个WriteSet发送到group replication是如何被校验的呢？</p>
+<p>原来在group replicatioin 的校验模块中维护了一个校验集合，使用Certification_info来管理。Certification_info是一个map对象，它里面存的也是数据条目和数据库版本的映射。与WriteSet是一样的。源码中是这样定义的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef std::unordered_map&lt;std::string, Gtid_set_ref *&gt; Certification_info;</span><br></pre></td></tr></table></figure></p>
+<p>一旦某个事务校验通过，它产生的写集就会写入到这个校验集合（Certification_info）中。<br>假如Certification_info当前存在的校验快照是这样的：<br>pk_v1 – UUID:1-8<br>pk_v2 – UUID:1-8<br>…</p>
+<p>那么事务T1的校验就会被通过。因为对于第一数据（pk_v1）来说，校验集合中的版本是UUID:1-8 （CV），而事务T1中的版本是UUID:1-9(DV), CV 是DV的子集，对于第二条数据（pk_v2）也是这样。</p>
+<p>通过之后校验模块还要判断这个事务T1有没有GTID，如果session 中变量gtid_next=AUTOMATIC，那么它是没有GTID的。这就要为其分配一个,因为它在是在版本UUID:1-9的基础上执行的，所以给他分配下一个数字（GNO）10（当然不会简单的是这样，还有一些结合group_replication_gtid_assignment_block_size的逻辑判断，这里为简单起见，不引入它），那么这个事务的GTID就是UUID:10。</p>
+<p>这个事务产生的WriteSet写集也会更新的校验集合（Certification_info）中：<br>pk_v1 –      UUID:1-9<br>pk_v2 –      UUID:1-9<br>…</p>
+<p>如果再有事务修改pk_v1和pk_v2只须和上一个校验成功的版本对比即可。如果上一个版本是新来事务的子集那么校验就通过，否则就拒绝。源码实现中也只是一个遍历对比。其注释还是很有帮助的 certifier.cc:630。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    for (std::list&lt;const char *&gt;::iterator it = write_set-&gt;begin();</span><br><span class="line">         it != write_set-&gt;end(); ++it) &#123;</span><br><span class="line">      Gtid_set *certified_write_set_snapshot_version =</span><br><span class="line">          get_certified_write_set_snapshot_version(*it);</span><br><span class="line"></span><br><span class="line">      /*</span><br><span class="line">        If the previous certified transaction snapshot version is not</span><br><span class="line">        a subset of the incoming transaction snapshot version, the current</span><br><span class="line">        transaction was executed on top of outdated data, so it will be</span><br><span class="line">        negatively certified. Otherwise, this transaction is marked</span><br><span class="line">        certified and goes into applier.</span><br><span class="line">      */</span><br><span class="line">      if (certified_write_set_snapshot_version != NULL &amp;&amp;</span><br><span class="line">          !certified_write_set_snapshot_version-&gt;is_subset(snapshot_version))</span><br><span class="line">        goto end;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面的注释逻辑有些绕，大家要多读几遍，反复体会。正过来理解就是：某行数据的校验就是看它在校验集合中的版本（CV）是不是它被修改时所属节点的数据库快照版本（DV）的子集。如果是，就校验通过，否则拒绝。</p>
+<p>在源码的校验方法（rpl_gno Certifier::certify）中，真正做校验的就上面那点儿代码。后面的都是校验以后的处理，比如产生GTID, 将新的写集更新到校验结合中等等。感兴趣的同行可以自己去看。</p>
+<p>随着事务的增加，这个校验集合会不会越来越大呢？ 会的。但不用担心，有单独的算法定时清理。那么什么样的数据可以被清理掉呢？</p>
+<p>一旦事务在集群中所有节点都执行完成，那么这个事务的写集就可以从校验集合中清理掉了。它不会再影响任何事务的校验。group replication 各节点会定时将自己已经commit的事务信息发送到集群，然后汇集它们做一个交集，就是在所有节点都commit的事务集合。这个集合可以通过replication_group_member_stats表查到。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from replication_group_member_stats\G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">                              CHANNEL_NAME: group_replication_applier</span><br><span class="line">                                   VIEW_ID: 15295588114993449:10</span><br><span class="line">                                 MEMBER_ID: ec5e51ae-68a0-11e8-8571-52540017b589</span><br><span class="line">               COUNT_TRANSACTIONS_IN_QUEUE: 0</span><br><span class="line">                COUNT_TRANSACTIONS_CHECKED: 2144030</span><br><span class="line">                  COUNT_CONFLICTS_DETECTED: 1</span><br><span class="line">        COUNT_TRANSACTIONS_ROWS_VALIDATING: 0</span><br><span class="line">        TRANSACTIONS_COMMITTED_ALL_MEMBERS: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-5439749:5446604-5446605</span><br><span class="line">            LAST_CONFLICT_FREE_TRANSACTION: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:5446605</span><br><span class="line">COUNT_TRANSACTIONS_REMOTE_IN_APPLIER_QUEUE: 0</span><br><span class="line">         COUNT_TRANSACTIONS_REMOTE_APPLIED: 7</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_PROPOSED: 2144027</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_ROLLBACK: 0</span><br><span class="line">*************************** 2. row ***************************</span><br><span class="line">                              CHANNEL_NAME: group_replication_applier</span><br><span class="line">                                   VIEW_ID: 15295588114993449:10</span><br><span class="line">                                 MEMBER_ID: ec725fcd-692c-11e8-bb5f-525400f9f72b</span><br><span class="line">               COUNT_TRANSACTIONS_IN_QUEUE: 0</span><br><span class="line">                COUNT_TRANSACTIONS_CHECKED: 2</span><br><span class="line">                  COUNT_CONFLICTS_DETECTED: 0</span><br><span class="line">        COUNT_TRANSACTIONS_ROWS_VALIDATING: 0</span><br><span class="line">        TRANSACTIONS_COMMITTED_ALL_MEMBERS: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-5439749:5446604-5446605</span><br><span class="line">            LAST_CONFLICT_FREE_TRANSACTION: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:5446605</span><br><span class="line">COUNT_TRANSACTIONS_REMOTE_IN_APPLIER_QUEUE: 0</span><br><span class="line">         COUNT_TRANSACTIONS_REMOTE_APPLIED: 1</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_PROPOSED: 1</span><br><span class="line">         COUNT_TRANSACTIONS_LOCAL_ROLLBACK: 0</span><br></pre></td></tr></table></figure></p>
+<p>结果集中有一个字段TRANSACTIONS_COMMITTED_ALL_MEMBERS，就是当前各节点均已执行的事务集合（stable set）。由这个结合再与校验集合Certification_info中的个条目做交集，如果校验结合中某条目是TRANSACTIONS_COMMITTED_ALL_MEMBERS的子集。那么此条目就可以被清理。源码中实现的方法：void Certifier::garbage_collect()<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">DBUG_ENTER(&quot;Certifier::garbage_collect&quot;);</span><br><span class="line">DBUG_EXECUTE_IF(&quot;group_replication_do_not_clear_certification_database&quot;,</span><br><span class="line">                &#123; DBUG_VOID_RETURN; &#125;;);</span><br><span class="line"></span><br><span class="line">mysql_mutex_lock(&amp;LOCK_certification_info);</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">  When a transaction &quot;t&quot; is applied to all group members and for all</span><br><span class="line">  ongoing, i.e., not yet committed or aborted transactions,</span><br><span class="line">  &quot;t&quot; was already committed when they executed (thus &quot;t&quot;</span><br><span class="line">  precedes them), then &quot;t&quot; is stable and can be removed from</span><br><span class="line">  the certification info.</span><br><span class="line">*/</span><br><span class="line">Certification_info::iterator it = certification_info.begin();</span><br><span class="line">stable_gtid_set_lock-&gt;wrlock();</span><br><span class="line">while (it != certification_info.end()) &#123;</span><br><span class="line">  if (it-&gt;second-&gt;is_subset(stable_gtid_set)) &#123;</span><br><span class="line">    if (it-&gt;second-&gt;unlink() == 0) delete it-&gt;second;</span><br><span class="line">    certification_info.erase(it++);</span><br><span class="line">  &#125; else</span><br><span class="line">    ++it;</span><br><span class="line">&#125;</span><br><span class="line">stable_gtid_set_lock-&gt;unlock();</span><br></pre></td></tr></table></figure></p>
+<p>更多信息还请阅读源码。这部分实现逻辑确实比较绕。描述起来也很困难。通过查阅文档，再结合源码实现，特别是源码的注释，反复体会方能理解。</p>
+<p>参考资料：</p>
+<p>WL#6833</p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/Group-Replication/">Group Replication</a>
+		  
+			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+			<a href="/tags/MGR/">MGR</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/07/06/MySQL新一代HA架构：mysqlfailove-semisync-of-mysql5-7/">
+        <span class="next-text nav-default">MySQL新一代HA架构：mysqlfailove + semisync of mysql5.7</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">17</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
