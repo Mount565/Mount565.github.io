@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="MySQL8复制新特性：基于写集跟踪的多线程应用技术"/>
+
+
+
+
+  <meta name="keywords" content="MySQL8," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/07/08/MySQL8复制新特性：基于写集跟踪的多线程应用技术/"/>
+
+
+<meta name="description" content="MySQL主从复制延迟一直是人人皆知诟病，令DBA非常头疼却又无可奈何。我们知道，大多数主从延迟是由于从库应用binglog跟不上主库造成的，如何使binlog中的事务在从库得到高效地应用成为解决问题的关键。MySQL研发团队一直在孜孜不倦地寻找解决方案，直到MySQL8,终见成效！  MySQL5">
+<meta name="keywords" content="MySQL8">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL8复制新特性：基于写集跟踪的多线程应用技术">
+<meta property="og:url" content="https://dbalife.info/2018/07/08/MySQL8复制新特性：基于写集跟踪的多线程应用技术/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="MySQL主从复制延迟一直是人人皆知诟病，令DBA非常头疼却又无可奈何。我们知道，大多数主从延迟是由于从库应用binglog跟不上主库造成的，如何使binlog中的事务在从库得到高效地应用成为解决问题的关键。MySQL研发团队一直在孜孜不倦地寻找解决方案，直到MySQL8,终见成效！  MySQL5">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-07-08T14:18:59.692Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL8复制新特性：基于写集跟踪的多线程应用技术">
+<meta name="twitter:description" content="MySQL主从复制延迟一直是人人皆知诟病，令DBA非常头疼却又无可奈何。我们知道，大多数主从延迟是由于从库应用binglog跟不上主库造成的，如何使binlog中的事务在从库得到高效地应用成为解决问题的关键。MySQL研发团队一直在孜孜不倦地寻找解决方案，直到MySQL8,终见成效！  MySQL5">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> MySQL8复制新特性：基于写集跟踪的多线程应用技术 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          MySQL8复制新特性：基于写集跟踪的多线程应用技术
+        
+      </h1>
+
+      <time class="post-time">
+          Jul 08 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>MySQL主从复制延迟一直是人人皆知诟病，令DBA非常头疼却又无可奈何。我们知道，大多数主从延迟是由于从库应用binglog跟不上主库造成的，如何使binlog中的事务在从库得到高效地应用成为解决问题的关键。MySQL研发团队一直在孜孜不倦地寻找解决方案，直到MySQL8,终见成效！</p>
+<p>MySQL5.6提出了基于database的多线程应用方案，即从库为一个schema开启一个应用线程，如果事务更新的不是同一个schema，那么它们在从库就可以被并发执行。这个方案很蹩脚，并没有改变多少现状，它对于单库单实例的应用没有任何帮助。及时多库单实例中，大量并发热点库的读写依然会有不小的延迟。</p>
+<p>紧接着MySQL5.7推出了基于logical_clock的并发应用策略。这个方案的关键技术是binlog group commit. 不同会话在同一时间commit的事务，在binlog中进行了分组。同一个分组内的事务复制到从库后可以被并发应用。而且还给出了相关变量来控制分组的大小以增强从库的并发效果。这个方案还是很赞，极大地缓解了主从延迟现状。但它也存在一定的局限性。如从库的并发不可能超过主库的并发，如果主库是单线程，从库也只能是单线程应用，延迟还是会存在。</p>
+<p>MySQL8中推出了并发应用的终极大招：基于写集跟踪的多线程应用技术（Writeset-based Dependency Tracking Parallel Applying）， 它不再依赖于group commit, 它根据一个事务的写集（writeset）是否有交集 ,来决定是否可以并发执行。也就是说，如果两个事务的写集没有交集，说明它们没有修改相同的数据，因此它们是可以被并发执行。从库的并发不再受制于主库的并发，即使主库是单线程执行，事务复制到从库依然可以多线程并发应用。这使得从库的吞吐量大大提升。</p>
+<p>MySQL8引入了新的变量binlog_transaction_dependency_tracking，它有三个值可以选：</p>
+<ul>
+<li>COMMIT_ORDER（默认）事务的依赖信息由master的commit timestamp产生。对于不产生写集的事务即使设置为WRITESET或WRITESET_SESSION，也会退化为COMMIT_ORDER。哪些事务无法产生写集呢？如更新没有主键的表，DDL，或者更新有外键约束的表是无写集产生的。</li>
+<li>WRITESET 事务的依赖关系由写集产生，任何事务更新的写集没有交集就可以并发。</li>
+<li>WRITESET_SESSION 它和WRITESET一样，只是同一个session内的事务不可并发。</li>
+</ul>
+<p>需要注意的是，若使用WRITESET或WRITESET_SESSION，必须启用transaction_write_set_extraction（XXHASH64|MURMUR32），不然无法设置binlog_transaction_dependency_tracking的值为WRITESET或WRITESET_SESSION。同样如果binlog_transaction_dependency_tracking的值为WRITESET或WRITESET_SESSION，尝试关闭transaction_write_set_extraction会报错。</p>
+<p>另外引用的一个相关变量是binlog_transaction_dependency_history_size，默认是25000. 它是写集跟踪历史的长度（行数），底层使用了一个map对象（Writeset_history）缓存在内存中。当一个事务修改了某行数据，会从这个缓存中寻找上一次修改这行数据的事务的sequence_no作为其commit_parent. 其定义如下rpl_trx_tracking.h 类Writeset_trx_dependency_tracker：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">     Track the last transaction sequence number that changed each row</span><br><span class="line">     in the database, using row hashes from the writeset as the index.</span><br><span class="line">   */</span><br><span class="line">   typedef std::map&lt;uint64, int64&gt; Writeset_history;</span><br><span class="line">   Writeset_history m_writeset_history;</span><br></pre></td></tr></table></figure></p>
+<p>我们再看下获取事务依赖关系底层的实现机制(rpl_trx_tracking.cc)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">   Get the dependencies in a transaction, the main entry point for the</span><br><span class="line">   dependency tracking work.</span><br><span class="line"> */</span><br><span class="line"> void Transaction_dependency_tracker::get_dependency(THD *thd,</span><br><span class="line">                                                     int64 &amp;sequence_number,</span><br><span class="line">                                                     int64 &amp;commit_parent) &#123;</span><br><span class="line">    //这俩个变量是传的引用，方法内对其改变会反应到外层的定义处。</span><br><span class="line">   sequence_number = commit_parent = 0;</span><br><span class="line">   //对这三种可选的类型，分别实现了三个类。</span><br><span class="line">   switch (m_opt_tracking_mode) &#123;</span><br><span class="line">     case DEPENDENCY_TRACKING_COMMIT_ORDER:</span><br><span class="line">     //对于COMMIT_ORDER, 调用commit_order类中的get_dependency方法。</span><br><span class="line">       m_commit_order.get_dependency(thd, sequence_number, commit_parent);</span><br><span class="line">       break;</span><br><span class="line">     case DEPENDENCY_TRACKING_WRITESET:</span><br><span class="line"></span><br><span class="line">       m_commit_order.get_dependency(thd, sequence_number, commit_parent);</span><br><span class="line">       //如果是writeset 则在commit_order基础上再次调用writeset做事务依赖处理，这会缩小last_committed的值，使并发范围增大。</span><br><span class="line">       m_writeset.get_dependency(thd, sequence_number, commit_parent);</span><br><span class="line">       break;</span><br><span class="line">     case DEPENDENCY_TRACKING_WRITESET_SESSION:</span><br><span class="line">       m_commit_order.get_dependency(thd, sequence_number, commit_parent);</span><br><span class="line">       m_writeset.get_dependency(thd, sequence_number, commit_parent);</span><br><span class="line">       //如果是writeset session则在writeset的基础上，再次做事务依赖关系处理，把同一个sesssion事务可并发的情况处理掉。它会在wirteset的基础上降低并发。</span><br><span class="line">       m_writeset_session.get_dependency(thd, sequence_number, commit_parent);</span><br><span class="line">       break;</span><br><span class="line">     default:</span><br><span class="line">       DBUG_ASSERT(0);  // blow up on debug</span><br><span class="line">       /*</span><br><span class="line">         Fallback to commit order on production builds.</span><br><span class="line">        */</span><br><span class="line">       m_commit_order.get_dependency(thd, sequence_number, commit_parent);</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面代码片段中，关键部分我做了些汉语注释。这个方法是比较底层的处理，其参数commit_parent就是上层的last_committed。 通过其调用逻辑可以推断其对master性能的影响。使用COMMIT_ORDER，性能最好，WRITESET次之，WRITESET_SESSION最差，具体性能差异，还需要压测对比。而slave的并发性能则是，使用 COMMIT_ORDER 最差，WRITESET_SESSION 次之，WRITESET最好。</p>
+<p>使用WRITESET的问题是，同一个session执行的事务在从库也可并发执行，这可能会导致从库binlog中事务执行顺序和主库binlog不一致，但并不影响数据的一致性。如果严格要求事务的commit顺序，有两种方式可选：</p>
+<ol>
+<li>使用WRITESET_SESSION，同一个session事务不可并发。但会导致master性能最差，因为事务依赖关系要算三次。</li>
+<li>使用WRITESET+slave-preserve-commit-order,也可保证事务执行顺序与master一致。至于性能教WRITESET_SESSION孰优孰劣，需要压测对比。</li>
+</ol>
+<p>我做了一个测试，设置binlog_transaction_dependency_tracking=WRITESET，然后使用单线程压测主库，查看其binglog的内容片段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[mount@Mounts-Mac]~/blog:grep last_committed ~/tmp/bin2.sql | more</span><br><span class="line">#180708 19:12:54 server id 2  end_log_pos 285   GTID    last_committed=0        sequence_number=1       rbr_only=yes    original_committed_timestamp=1531048374763124   immediate_commit_timestamp=1531048374807831     transaction_length=1692</span><br><span class="line">#180708 19:12:54 server id 2  end_log_pos 1977  GTID    last_committed=1        sequence_number=2       rbr_only=yes    original_committed_timestamp=1531048374824216   immediate_commit_timestamp=1531048374825436     transaction_length=1692</span><br><span class="line">#180708 19:12:54 server id 2  end_log_pos 3669  GTID    last_committed=1        sequence_number=3       rbr_only=yes    original_committed_timestamp=1531048374837375   immediate_commit_timestamp=1531048374838367     transaction_length=1692</span><br><span class="line">#180708 19:12:54 server id 2  end_log_pos 5361  GTID    last_committed=1        sequence_number=4       rbr_only=yes    original_committed_timestamp=1531048374848781   immediate_commit_timestamp=1531048374850233     transaction_length=1692</span><br><span class="line">#180708 19:12:54 server id 2  end_log_pos 7053  GTID    last_committed=1        sequence_number=5       rbr_only=yes    original_committed_timestamp=1531048374882084   immediate_commit_timestamp=1531048374886304     transaction_length=1692</span><br><span class="line">#180708 19:12:54 server id 2  end_log_pos 8745  GTID    last_committed=1        sequence_number=6       rbr_only=yes    original_committed_timestamp=1531048374901144   immediate_commit_timestamp=1531048374902336     transaction_length=1692</span><br><span class="line">...</span><br><span class="line">#180708 19:13:04 server id 2  end_log_pos 803985        GTID    last_committed=116      sequence_number=476     rbr_only=yes    original_committed_timestamp=1531048384965998   immediate_commit_timestamp=1531048384968042     transaction_length=1692</span><br><span class="line">#180708 19:13:04 server id 2  end_log_pos 805677        GTID    last_committed=1        sequence_number=477     rbr_only=yes    original_committed_timestamp=1531048384982869   immediate_commit_timestamp=1531048384985381     transaction_length=1692</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到有许多last_committed的值是相同的，这些是可以在从库并发执行的。而且last_committed不再是顺序递增。（注：last_committed就是底层的commit_parent。last_committed相同说明其共同依赖同一个事务）</p>
+<p>好了，到这里，基于写集跟踪的多线程应用(Writeset-based Dependency Tracking Parallel Applying)技术的关键部分都说到了。这是一个令人振奋的新特性，它开拓了mysql史上前所未有的新局面，特别是结合Group Replication+Writeset-based MTS可将mysql的内置高可用演绎到极致。什么MHA,MMA,半同步等都将成为历史。还说什么呢，拥抱MySQL8吧 ！</p>
+<p>参考资料：<br><a href="https://dev.mysql.com/worklog/task/?id=9556" target="_blank" rel="noopener">WL#9556</a></p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/07/07/揭开Group-Replication校验的神秘面纱/">
+        <span class="next-text nav-default">揭开Group Replication校验的神秘面纱</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">18</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
