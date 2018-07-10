@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="Group Replication 优化思路"/>
+
+
+
+
+  <meta name="keywords" content="MySQL,Group Replication,MySQL8," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/07/10/Group-Replication-优化思路/"/>
+
+
+<meta name="description" content="Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如">
+<meta name="keywords" content="MySQL,Group Replication,MySQL8">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Group Replication 优化思路">
+<meta property="og:url" content="https://dbalife.info/2018/07/10/Group-Replication-优化思路/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-07-10T10:23:53.078Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Group Replication 优化思路">
+<meta name="twitter:description" content="Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> Group Replication 优化思路 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Group Replication 优化思路
+        
+      </h1>
+
+      <time class="post-time">
+          Jul 10 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如何优化Group Replication集群进行分析探讨。</p>
+<p>首先我们分析下影响GR性能的主要因素。</p>
+<h4 id="影响GR性能主要因素："><a href="#影响GR性能主要因素：" class="headerlink" title="影响GR性能主要因素："></a>影响GR性能主要因素：</h4><ol>
+<li>网络带宽<br>在写节点上产生的事务，在最终被commit前，需要发送到复制组中做冲突校验，这需要消耗网络带宽，并给事务的延迟至少增加一个RTT(Round Trip Time,TCP数据包旅行一个回路的时间)。</li>
+<li>校验吞吐量<br>事务会被按照相同的顺序发送到各节点做冲突校验，校验通过后会被远端节点写入relay-log，这个写入是由一个单线程负责。当校验的速率很高，磁盘吞吐量（relay-log写入）将会成为瓶颈。</li>
+<li>读节点applier线程应用效率<br>读节点的applier线程的应用不及时会触发writer节点flow-control，对于多主模式架构，applier线程的低效可能会造成校验失败率升高。</li>
+</ol>
+<p>GR性能瓶颈主要存在上面三个方面，有些是需要提升物理硬件，有些则是参数调整。我们来分析下针对每一个方面的优化措施。</p>
+<h4 id="网络因素："><a href="#网络因素：" class="headerlink" title="网络因素："></a>网络因素：</h4><ol>
+<li>使用高带宽低延迟网络，使所有节点都处于同一网关</li>
+<li><p>减少带宽消耗，如采取启用压缩,尽量缩小binlog等措施</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">group_replication_compression_threshold=1000000 # default in mysql8.0.11</span><br><span class="line">binlog_row_image=MINIMAL</span><br></pre></td></tr></table></figure>
+<p>group_replication_compression_threshold 当复制组间通信的event超过这一阈值时，启用LZ4压缩，以减小通信量。</p>
+<p>binlog_row_image默认是full,即将某行数据的改变前(before)和改变后(after)的数据都写入binlog.实际上只有update才会产生改变前和改变后两个数据镜像，而对于insert只会有改变后的数据镜像，delete只会有改变前的数据镜像。如果每个表都有primary key(表定义在主从架构中完全相同，group replication要求表必须有主键),完全可以在binlog中的before镜像中记入主键值（它已经能唯一标识数据改变的行了），而在after镜像中只记录所改变的字段的值，而不是所有的字段的值。这样binlog就大大缩小，网络间通信量也就大大减少了。只是在从节点应用这样的binlog event时，效率会有点低。</p>
+</li>
+<li><p>通过频繁等待，减少group replication线程睡眠次数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET GLOBAL group_replication_poll_spin_loops= 10000; # default 0</span><br></pre></td></tr></table></figure>
+<p>这样可使GCT(Group Comunitcatoin Thread)积极地在消息队列处等待，一旦队列中有新消息可以更快地响应。同时也降低了操作系统对其上下文切换频率。</p>
+<h4 id="校验速率："><a href="#校验速率：" class="headerlink" title="校验速率："></a>校验速率：</h4></li>
+<li>可以使用single-primary模式，因为正常情况下，这种模式是不需要校验的（有一种情况除外，就是新master正在应用从之前的primary复制来的binlog，这种情况下是需要校验的），但这种模式下，一旦primary宕机，需要选举一个新的master,多了一个选举的过程。</li>
+<li>将relay-log，tmpdir 置于高性能硬盘, 校验通过后非local_transaction要写入relay log，对于大事务writeset的抽取可能会需要写入磁盘临时文件，如果relay log/临时文件读写性能很差，将会大大增加事务的延时。在这两个地方可能产生物理IO瓶颈。</li>
+<li><p>对于多主架构减少校验的复杂度</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">group_replication_gtid_assignment_block_size=1000000 # default</span><br></pre></td></tr></table></figure>
+<p>事务在节点执行完成，commit前发送到GR做校验。校验成功后，GR会给此事务分配一个GTID（如果该事务没有GTID）。GR会给每个节点预留一个范围的GTID，（GTID是由server_uuid+数字组成，gr中GTID中的UUID部分都是一样的，数字部分则为各节点分配一个范围段，用完了再分配一个新的范围段）。这个范围段的大小就是有group_replication_gtid_assignment_block_size变量控制，默认是1000000。这个数字范围如果很大的话，gtid_executed就不能及时合并,许多GTID interval 会使校验算法变得复杂。</p>
+<h4 id="applier应用线程"><a href="#applier应用线程" class="headerlink" title="applier应用线程"></a>applier应用线程</h4><ol>
+<li><p>启用MTS多线程应用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set global slave_parallel_type=LOGICAL_CLOCK;</span><br><span class="line">set global slave_parallel_workers=8/16/32/+;</span><br><span class="line">set global slave_preserve_commit_order=ON;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启用基于写集依赖的多线程应用，使并发效率更高</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># for mysql8</span><br><span class="line">binlog_transaction_dependency_tracking=WRITESET</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>Applier线程的高效应用对提升集群性能非常重要。因为它可以使transaction_commit_on_all_memebers及时跟进，stable set 更加接近最新的事务。这会使校验集合（Certification_info）中的无用的快照版本被及时垃圾回收，从而降低了校验的复杂度，提高了整体性能的吞吐量。这是一个很重要的优化策略！</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>根据group replication的实现原理，其瓶颈主要产生于三点：</p>
+<ol>
+<li>复制组间通信（高带宽网络）</li>
+<li>事务在各节点的校验</li>
+<li>Applier应用效率</li>
+</ol>
+<p>优化的思路也是主要集中在这三个方向。每次调整参数都应压测对比效果，确保理论符合实际。盲目根据理论调优而不压测对比是不可取的。一套优化方案，都是经过反复调参反复压测而得出的最终结果。</p>
+</li>
+</ol>
+<p>参考资料：<br>之前读过一篇文章，写的很好，现在找不到了，很抱歉！</p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL/">MySQL</a>
+		  
+			<a href="/tags/Group-Replication/">Group Replication</a>
+		  
+			<a href="/tags/MySQL8/">MySQL8</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/07/08/MySQL8复制新特性：基于写集跟踪的多线程应用技术/">
+        <span class="next-text nav-default">MySQL8复制新特性：基于写集依赖跟踪的多线程应用技术</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">19</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>
