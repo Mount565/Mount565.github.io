@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-07-10T10:23:53.078Z">
+<meta property="og:updated_time" content="2018-07-16T22:40:54.229Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Group Replication 优化思路">
 <meta name="twitter:description" content="Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如">
@@ -192,25 +192,24 @@
 <li><p>对于多主架构减少校验的复杂度</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">group_replication_gtid_assignment_block_size=1000000 # default</span><br></pre></td></tr></table></figure>
 <p>事务在节点执行完成，commit前发送到GR做校验。校验成功后，GR会给此事务分配一个GTID（如果该事务没有GTID）。GR会给每个节点预留一个范围的GTID，（GTID是由server_uuid+数字组成，gr中GTID中的UUID部分都是一样的，数字部分则为各节点分配一个范围段，用完了再分配一个新的范围段）。这个范围段的大小就是有group_replication_gtid_assignment_block_size变量控制，默认是1000000。这个数字范围如果很大的话，gtid_executed就不能及时合并,许多GTID interval 会使校验算法变得复杂。</p>
-<h4 id="applier应用线程"><a href="#applier应用线程" class="headerlink" title="applier应用线程"></a>applier应用线程</h4><ol>
+</li>
+</ol>
+<h4 id="Applier应用线程"><a href="#Applier应用线程" class="headerlink" title="Applier应用线程"></a>Applier应用线程</h4><ol>
 <li><p>启用MTS多线程应用</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set global slave_parallel_type=LOGICAL_CLOCK;</span><br><span class="line">set global slave_parallel_workers=8/16/32/+;</span><br><span class="line">set global slave_preserve_commit_order=ON;</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>启用基于写集依赖的多线程应用，使并发效率更高</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># for mysql8</span><br><span class="line">binlog_transaction_dependency_tracking=WRITESET</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>Applier线程的高效应用对提升集群性能非常重要。因为它可以使transaction_commit_on_all_memebers及时跟进，stable set 更加接近最新的事务。这会使校验集合（Certification_info）中的无用的快照版本被及时垃圾回收，从而降低了校验的复杂度，提高了整体性能的吞吐量。这是一个很重要的优化策略！</p>
+<p>Applier线程的高效应用对提升集群性能非常重要。因为Applier 线程应用不及时可能会触发writer节点启用flow control,直接影响性能。除此之外，它对校验也会有重要的影响。因为Applier 的及时应用可以使transaction_commit_on_all_memebers及时跟进，stable set 更加接近最新的事务。这会使校验集合（Certification_info）中的无用的快照版本被及时垃圾回收，从而降低了校验的复杂度，提高了整体性能的吞吐量。这是一个很重要的优化策略！</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>根据group replication的实现原理，其瓶颈主要产生于三点：</p>
-<ol>
+</li>
 <li>复制组间通信（高带宽网络）</li>
 <li>事务在各节点的校验</li>
-<li>Applier应用效率</li>
-</ol>
+<li><p>Applier应用效率</p>
 <p>优化的思路也是主要集中在这三个方向。每次调整参数都应压测对比效果，确保理论符合实际。盲目根据理论调优而不压测对比是不可取的。一套优化方案，都是经过反复调参反复压测而得出的最终结果。</p>
 </li>
 </ol>
-<p>参考资料：<br>之前读过一篇文章，写的很好，现在找不到了，很抱歉！</p>
+<p>参考资料：<br><em>之前读过一篇文章，写的很好，现在找不到了，很抱歉！</em></p>
 
             </div>
           
