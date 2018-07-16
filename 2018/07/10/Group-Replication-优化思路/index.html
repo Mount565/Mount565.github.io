@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-07-16T22:40:54.229Z">
+<meta property="og:updated_time" content="2018-07-16T22:45:23.233Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Group Replication 优化思路">
 <meta name="twitter:description" content="Group Replication 是一种新的复制模式，它彻底颠覆了传统的复制模式，虽然还是异步复制（或者可称其为同步复制，异步应用），但能够实现强最终一致性，并且完全实现了无人干预式高可用，必将成为未来的主流。本文不详细介绍Group Replication的实现原理，网上有许多资料，这里主要对如">
@@ -186,7 +186,9 @@
 <li><p>通过频繁等待，减少group replication线程睡眠次数</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET GLOBAL group_replication_poll_spin_loops= 10000; # default 0</span><br></pre></td></tr></table></figure>
 <p>这样可使GCT(Group Comunitcatoin Thread)积极地在消息队列处等待，一旦队列中有新消息可以更快地响应。同时也降低了操作系统对其上下文切换频率。</p>
-<h4 id="校验速率："><a href="#校验速率：" class="headerlink" title="校验速率："></a>校验速率：</h4></li>
+</li>
+</ol>
+<h4 id="校验速率："><a href="#校验速率：" class="headerlink" title="校验速率："></a>校验速率：</h4><ol>
 <li>可以使用single-primary模式，因为正常情况下，这种模式是不需要校验的（有一种情况除外，就是新master正在应用从之前的primary复制来的binlog，这种情况下是需要校验的），但这种模式下，一旦primary宕机，需要选举一个新的master,多了一个选举的过程。</li>
 <li>将relay-log，tmpdir 置于高性能硬盘, 校验通过后非local_transaction要写入relay log，对于大事务writeset的抽取可能会需要写入磁盘临时文件，如果relay log/临时文件读写性能很差，将会大大增加事务的延时。在这两个地方可能产生物理IO瓶颈。</li>
 <li><p>对于多主架构减少校验的复杂度</p>
@@ -201,8 +203,10 @@
 <li><p>启用基于写集依赖的多线程应用，使并发效率更高</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># for mysql8</span><br><span class="line">binlog_transaction_dependency_tracking=WRITESET</span><br></pre></td></tr></table></figure>
 <p>Applier线程的高效应用对提升集群性能非常重要。因为Applier 线程应用不及时可能会触发writer节点启用flow control,直接影响性能。除此之外，它对校验也会有重要的影响。因为Applier 的及时应用可以使transaction_commit_on_all_memebers及时跟进，stable set 更加接近最新的事务。这会使校验集合（Certification_info）中的无用的快照版本被及时垃圾回收，从而降低了校验的复杂度，提高了整体性能的吞吐量。这是一个很重要的优化策略！</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>根据group replication的实现原理，其瓶颈主要产生于三点：</p>
 </li>
+</ol>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p> 根据group replication的实现原理，其瓶颈主要产生于三点：</p>
+<ol>
 <li>复制组间通信（高带宽网络）</li>
 <li>事务在各节点的校验</li>
 <li><p>Applier应用效率</p>
