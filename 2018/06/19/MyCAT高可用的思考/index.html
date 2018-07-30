@@ -234,9 +234,26 @@
   </nav>
 
         
-  <div class="comments" id="comments">
-    
-  </div>
+
+
+
+<div id="gcontainer"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  id: '', // 可选。默认为 location.href
+  owner: 'mount565',
+  repo: 'gitment-comments',
+  oauth: {
+    client_id: '09bfef25af96c2218b13',
+    client_secret: '192a84d4a407523b4db0b65ffbef01098d2fefa3',
+  },
+})
+gitment.render('gcontainer')
+</script>
+
+
 
 
       </footer>
