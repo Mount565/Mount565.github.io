@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="问题 这是一台从库VM，为了解决从库延迟问题，将sync_binlog设置为0，innodb_flush_log_at_trx_commit设置为2. 宿主机重启后，导致slave 复制SQL线程中断。 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-07-27T08:16:21.216Z">
+<meta property="og:updated_time" content="2018-07-30T12:07:24.415Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="宿主机重启导致slave异常分析记">
 <meta name="twitter:description" content="问题 这是一台从库VM，为了解决从库延迟问题，将sync_binlog设置为0，innodb_flush_log_at_trx_commit设置为2. 宿主机重启后，导致slave 复制SQL线程中断。 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19">
@@ -190,6 +190,7 @@
 <p>这个问题看似并不陌生，表中已经存在该事务了，为啥SQL线程还会尝试执行该事务呢？我们启用了GTID复制，只能说是事务在表中（或者redo）执行成功,但没有成功更新gtid_executed, mysql版本是5.6.19，gtid_executed是记录到了binlog中的，由于sync_binlog=0，根据两阶段递交原理，在第二阶段，刷盘binlog,清楚redo中prepare标记的操作中，刷盘binlog并没有使binlog真正落盘，而redo中事务prepare标记被清除，此时宿主机重启，导致这一批事务的GTID没有成功写入binlog中，而重启后，innodb crash recovery 也不会回滚这些事务，因为它们的prepare标记已经被清除了，它们已经是commit掉的事务了。这样导致了binlog中的GTID，少于redo实际执行的事务。而SQL线程根据GTID来判断事务是否已经执行，这些GTID 在binlog中不存，所以会被执行。而表中却已经执行过了，就报了主键冲突的错误。</p>
 <h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>解决办法很简单，就是注入空事务，跳过这些GTID，由于不知道有多少，所以要多次跳过，直到slave sql thread 能正常启动。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set gtid_next=&apos;06f49a7c-47ac-11e7-ab8d-0017fa00c800:26674286&apos;;                                                                          Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; begin;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; commit;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; set gtid_next=automatic;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br></pre></td></tr></table></figure></p>
 <p>我大概执行了七八次，才使SQL线程跑起来。这需要一个自动化脚本来处理，不然遇到这类问题还是比较麻烦。</p>
+<h3 id="PS"><a href="#PS" class="headerlink" title="PS"></a>PS</h3><p>脚本写好了，<a href="https://github.com/Mount565/inject_multi_empty_gtid_on_slave" target="_blank" rel="noopener">点击这里</a></p>
 
             </div>
           
