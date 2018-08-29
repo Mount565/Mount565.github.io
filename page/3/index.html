@@ -301,8 +301,10 @@
             
 
             
-              新增复制时间戳
-MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction
+              传统复制延时算法
+传统复制延迟算法存在一些问题：
+
+ 1. slave 延迟是基于Event, 即一个语句在master上开始执行的时间，如果在master上执行一个DML语句，等待一小时再commit,这是slave会瞬时延迟3600s,但很快消失了。一种更准确的算法是基于一个事务在master上
           <div class="read-more">
             <a href="/2018/06/12/MySQL-8-中复制延时的测量与监控/" class="cust-link">Read more</a>
           </div>

@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="问题： 这个问题发生在我们灾备环境： 1 2   OS 版本: CentOS 6.9 MySQL 版本: 5.6.19     mysql相关配置：  1 2 3 4 5 6 7 8   binlog_format=ROW gtid_mode=ON log_slave_updates=ON  enf">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-08-28T12:11:17.747Z">
+<meta property="og:updated_time" content="2018-08-29T11:02:55.473Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL5.6 Slave复制报1837导致事务不一致">
 <meta name="twitter:description" content="问题： 这个问题发生在我们灾备环境： 1 2   OS 版本: CentOS 6.9 MySQL 版本: 5.6.19     mysql相关配置：  1 2 3 4 5 6 7 8   binlog_format=ROW gtid_mode=ON log_slave_updates=ON  enf">
@@ -203,10 +203,10 @@
 <h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><p>slave io因为网络超时造成重连，适当增大net_read_timeout（默认30s）参数也许会有所帮助,但如果网络丢包造成binlog event不完整，io thread还是会重连，然后重新复制，这样sql_thread还是会出问题！</p>
 <p>若要严格保证事务的一致性，彻底解决这个问题，则需要在slave上回滚这个不完整事务。具体可如下操作：</p>
 <ol>
-<li>抽取slave 的binlog,并根据这个事务的gtid(06f49a7c-47ac-11e7-ab8d-0017fa00c800:29959097)所涉及的SQL，生成回滚SQL。</li>
+<li>stop slave;抽取slave 的binlog,并根据这个事务的gtid(06f49a7c-47ac-11e7-ab8d-0017fa00c800:29959097)所涉及的SQL，生成回滚SQL。</li>
 <li>在slave上关闭binlog记录，执行回滚SQL，回滚这个不完整事务。</li>
 <li>重新设置gtid_executed set和数据的对应关系（set gtid_purged=’06f49a7c-47ac-11e7-ab8d-0017fa00c800:29959096’）</li>
-<li>启动slave sql_thread.</li>
+<li>reset slave; start slave;.</li>
 </ol>
 <p>如此可保证sql_thread 会从新的Relay-log中执行事务06f49a7c-47ac-11e7-ab8d-0017fa00c800:29959097。</p>
 <h4 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h4><p>我一直主张使用MySQL及时升级新版本，因为在新版本中修复的bug都是老版本确定存在的，而且新版本还会加入一些新的特性，或者性能相关的优化。诚然，新版本会有引入新bug的风险，但同样旧版本也有未发现的bug的风险，旧版本也不是你安全的避风港。用mysql官方的话说“Maybe there are bugs, but they must be HARD to find.” MySQL经历了近三十年的发展，早已形成了一套完善的测试框架，每一个进入GA的版本都会经过严格全面的测试。从这一角度来讲，引入新Bug的概率还是很低。再说了，你用的这个旧版本有一大堆确定的bug,外加未知bug你都不担心，你担心新版本的未知bug （确定的bug在新版本已经被修复） ?</p>

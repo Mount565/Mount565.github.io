@@ -35,18 +35,18 @@
 <link rel="canonical" href="https://dbalife.info/2018/06/12/MySQL-8-中复制延时的测量与监控/"/>
 
 
-<meta name="description" content="新增复制时间戳 MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction">
+<meta name="description" content="传统复制延时算法 传统复制延迟算法存在一些问题：   1. slave 延迟是基于Event, 即一个语句在master上开始执行的时间，如果在master上执行一个DML语句，等待一小时再commit,这是slave会瞬时延迟3600s,但很快消失了。一种更准确的算法是基于一个事务在master上">
 <meta name="keywords" content="MySQL8,Replication,MGR">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL 8 中复制延时的测量与监控分析">
 <meta property="og:url" content="https://dbalife.info/2018/06/12/MySQL-8-中复制延时的测量与监控/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="新增复制时间戳 MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction">
+<meta property="og:description" content="传统复制延时算法 传统复制延迟算法存在一些问题：   1. slave 延迟是基于Event, 即一个语句在master上开始执行的时间，如果在master上执行一个DML语句，等待一小时再commit,这是slave会瞬时延迟3600s,但很快消失了。一种更准确的算法是基于一个事务在master上">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-15T12:19:30.224Z">
+<meta property="og:updated_time" content="2018-08-29T11:04:58.552Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL 8 中复制延时的测量与监控分析">
-<meta name="twitter:description" content="新增复制时间戳 MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction">
+<meta name="twitter:description" content="传统复制延时算法 传统复制延迟算法存在一些问题：   1. slave 延迟是基于Event, 即一个语句在master上开始执行的时间，如果在master上执行一个DML语句，等待一小时再commit,这是slave会瞬时延迟3600s,但很快消失了。一种更准确的算法是基于一个事务在master上">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -183,7 +183,13 @@
 
     
             <div class="post-content">
-            <h4 id="新增复制时间戳"><a href="#新增复制时间戳" class="headerlink" title="新增复制时间戳"></a>新增复制时间戳</h4><p>MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction)的，而不再是基于事件（event）。</p>
+            <h4 id="传统复制延时算法"><a href="#传统复制延时算法" class="headerlink" title="传统复制延时算法"></a>传统复制延时算法</h4><p>传统复制延迟算法存在一些问题：</p>
+<ol>
+<li>slave 延迟是基于Event, 即一个语句在master上开始执行的时间，如果在master上执行一个DML语句，等待一小时再commit,这是slave会瞬时延迟3600s,但很快消失了。一种更准确的算法是基于一个事务在master上commit的时间来算。</li>
+<li>在级联复制拓扑中，slave只能看到与一级master的延时，无法看到与相邻master的延时</li>
+<li>无法正确处理跨时区复制的问题</li>
+</ol>
+<h4 id="新增复制时间戳"><a href="#新增复制时间戳" class="headerlink" title="新增复制时间戳"></a>新增复制时间戳</h4><p>MySQL8在binlog文件中，对每一个事务（注意是事务，不是事件）都记录了两个时间戳：original_commit_timestamp和immediate_commit_timestamp，通过计算这两个时间戳的差来测量复制延时。这种延时的测量是基于事务(transaction)的，而不再是基于事件（event）。</p>
 <ul>
 <li>original_commit_timestamp： 在产生master节点（事务产生的原始节点），事务成功commit(写入binlog)的毫秒数（基于unix epoch time：1970-01-01T00:00:00Z算起）</li>
 <li>immediate_commit_timestamp： 在即时主机，该事务被成功commit的毫秒数（基于unix epoch time：1970-01-01T00:00:00Z算起）</li>
