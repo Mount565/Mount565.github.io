@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="在Group Replication 架构中，一个事务在某节点执行，commit之前，会把该事务的所产生的写集（writeset），交给group replication 去校验，看该事务是否与其它节点执行的事务相冲突，如果不冲突，本节点就会commit返回，其余节点就会把该事务的binlog ev">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-07-07T10:43:44.279Z">
+<meta property="og:updated_time" content="2018-10-07T06:57:28.337Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="揭开Group Replication校验的神秘面纱">
 <meta name="twitter:description" content="在Group Replication 架构中，一个事务在某节点执行，commit之前，会把该事务的所产生的写集（writeset），交给group replication 去校验，看该事务是否与其它节点执行的事务相冲突，如果不冲突，本节点就会commit返回，其余节点就会把该事务的binlog ev">
@@ -185,7 +185,7 @@
             <div class="post-content">
             <p>在Group Replication 架构中，一个事务在某节点执行，commit之前，会把该事务的所产生的写集（writeset），交给group replication 去校验，看该事务是否与其它节点执行的事务相冲突，如果不冲突，本节点就会commit返回，其余节点就会把该事务的binlog event写入relay log，由applier线程应用。注意，只有多主模式（multi primary）才需要做冲突校验，对于单主模式（single primary）则没有必要，因为不可能冲突！</p>
 <p>那么group replication 是如何校验的呢？ 事务间的冲突又是如何确定的呢?</p>
-<p>这个过程相当神秘，其实理解了又觉得其非常简单，但理解的过程很不简单！</p>
+<p>这个过程相当神秘，其实理解了又觉得其非常简单！</p>
 <p>首先我们来看这个writeset 是个什么东西。所谓写集（writeset）就是就是一个事务执行所影响的具体数据行（用主键hash的值来标识），以及执行这个事务的时候，数据库的版本快照！又一个新概念，什么是数据库的版本快照？ 其实就是当前数据库已经执行了（commit）哪些事务,说白了就是gtid_executed的值。这样就好理解了。</p>
 <p>假如我们有一个事务T1，产生了如下WriteSet</p>
 <p>pk_v1 –      UUID:1-9<br>pk_v2 –      UUID:1-9</p>
@@ -289,14 +289,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">22</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">1</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EL/">EL</a><span class="tag-list-count">3</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
