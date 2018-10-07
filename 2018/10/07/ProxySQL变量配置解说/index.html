@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="ProxySQL中有一系列变量来供用户调优配置或功能配置。这些变量存放在表global_varialbes中。其中大部分变量可以在线修改，即时生效（执行LOAD MYSQL VARIABLES TO RUNTIME or LOAD ADMIN VARIABLES TO RUNTIME），但变量：ad">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-07T06:56:50.775Z">
+<meta property="og:updated_time" content="2018-10-07T08:26:21.449Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ProxySQL变量配置解说">
 <meta name="twitter:description" content="ProxySQL中有一系列变量来供用户调优配置或功能配置。这些变量存放在表global_varialbes中。其中大部分变量可以在线修改，即时生效（执行LOAD MYSQL VARIABLES TO RUNTIME or LOAD ADMIN VARIABLES TO RUNTIME），但变量：ad">
@@ -195,13 +195,15 @@
 </li>
 <li><p>admin-read_only<br>配置管理接口为只读，当配置好proxysql后，通过设置admin-read_only为true可防止被误改。若要回复可修改，只能执行命令。PROXYSQL READWRITE</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set admin-read_only=&apos;true&apos;;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; load admin variables to runtime;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; SET admin-refresh_interval = 1700;</span><br><span class="line">ERROR 1045 (#2800): attempt to write a readonly database</span><br><span class="line"></span><br><span class="line">mysql&gt; update mysql_users set fast_forward=1 ;</span><br><span class="line">ERROR 1045 (#2800): attempt to write a readonly database</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">mysql&gt; proxysql readwrite;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; SET admin-refresh_interval = 1700;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br></pre></td></tr></table></figure>
-<ul>
-<li>admin-refresh_interval<br>刷新频率（microseconds）: 路由规则统计信息，命令计数信息都刷新到表的时间间隔。以微妙为单位。默认：2000 微妙。 该变量设置太低会影响proxySQL的性能，太高则影响数据的准确度。</li>
-</ul>
+</li>
+<li><p>admin-refresh_interval<br> 刷新频率（microseconds）: 路由规则统计信息，命令计数信息都刷新到表的时间间隔。以微妙为单位。默认：2000 微妙。 该变量设置太低会影响proxySQL的性能，太高则影响数据的准确度。</p>
 </li>
 <li>admin-stats_credentials<br>查看Proxy统计信息的账户，该账户是只读的admin账户，只能查看配置、统计信息，不能修改。默认stats:stats。</li>
 <li>admin-web_enabled<br>ProxySQL 从1.4.4起，内置了HTTP web server， 通过web界面即可查看起内部的统计消息，监控信息等。该变量控制是否启用web端口，默认fase, 若要启用可设置为true. web 界面登陆账户就是是在上面admin-stats_credentials变量所配置的值。</li>
-<li>admin-web_port<br>Http server监听端口，默认6080<h4 id="历史信息统计相关变量"><a href="#历史信息统计相关变量" class="headerlink" title="历史信息统计相关变量"></a>历史信息统计相关变量</h4>Proxy SQL 1.4.4后，历史统计信息被储存在新的数据库中proxysql_stats.db 。</li>
+<li>admin-web_port<br>Http server监听端口，默认6080   </li>
+</ul>
+<h4 id="历史信息统计相关变量"><a href="#历史信息统计相关变量" class="headerlink" title="历史信息统计相关变量"></a>历史信息统计相关变量</h4><p>Proxy SQL 1.4.4后，历史统计信息被储存在新的数据库中proxysql_stats.db 。</p>
+<ul>
 <li>admin-stats_mysql_connection_pool<br>连接池相关的统计信息刷新频率。默认60秒</li>
 <li>admin-stats_mysql_connections<br>前端/后端连接信息刷新频率，默认60秒</li>
 <li>admin-stats_mysql_query_cache<br>MySQL Query Cache的更新频率，默认60秒</li>
@@ -261,10 +263,10 @@
 <li>mysql-query_digests_lowercase<br>设为true时，query digest会自动转换为小写字母。否则是大小写敏感。默认为false。</li>
 <li>mysql-query_digests_max_digest_length<br>设置digest_text的最大长度。默认2048</li>
 <li>mysql-query_digests_max_query_length<br>计算digest和digest_text时，所使用query的最大长度。默认65000.</li>
-<li>mysql-query_processor_iterations</li>
+<li>mysql-query_processor_iterations<br>当设置了mysql_query_rules.flagOUT，且flagOUT=flagIN，处理器重新匹配这条规则mysql-query_processor_iterations次。默认是0.</li>
 </ul>
 <ul>
-<li><p>mysql-query_processor_regex<br>选择正则表达式引擎<br>1: PCRE<br>2: RE2<br>默认是1</p>
+<li><p>mysql-query_processor_regex<br>选择正则表达式引擎<br>1: <a href="http://www.pcre.org/" target="_blank" rel="noopener">PCRE</a><br>2: <a href="https://github.com/google/re2" target="_blank" rel="noopener">RE2</a><br>默认是1</p>
 </li>
 <li><p>mysql-query_retries_on_failure<br>当一个query执行失败时，重试的次数，默认1</p>
 </li>
