@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="description" content="ProxySQL Cluster 初探"/>
+
+
+
+
+  <meta name="keywords" content="ProxySQL," />
+
+
+
+
+
+  <link rel="alternate" href="/default" title="DBA Life">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1" />
+
+
+
+<link rel="canonical" href="https://dbalife.info/2018/10/09/ProxySQL-Cluster-初探/"/>
+
+
+<meta name="description" content="PrxoySQL从版本1.4起内置了集群模块，同一集群的配置会相互同步，这对大规模Proxy实例的管理带来了极大的方便。虽然目前相关特性还不是很完善，但这一令人期待的新功能让人禁不住先睹为快。  ProxyCluster,主要有两大模块组成：   1. 监控  2. 重新配置  目前监控和重配涉及4">
+<meta name="keywords" content="ProxySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ProxySQL Cluster 初探">
+<meta property="og:url" content="https://dbalife.info/2018/10/09/ProxySQL-Cluster-初探/index.html">
+<meta property="og:site_name" content="DBA Life">
+<meta property="og:description" content="PrxoySQL从版本1.4起内置了集群模块，同一集群的配置会相互同步，这对大规模Proxy实例的管理带来了极大的方便。虽然目前相关特性还不是很完善，但这一令人期待的新功能让人禁不住先睹为快。  ProxyCluster,主要有两大模块组成：   1. 监控  2. 重新配置  目前监控和重配涉及4">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-10-09T11:22:16.849Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ProxySQL Cluster 初探">
+<meta name="twitter:description" content="PrxoySQL从版本1.4起内置了集群模块，同一集群的配置会相互同步，这对大规模Proxy实例的管理带来了极大的方便。虽然目前相关特性还不是很完善，但这一令人期待的新功能让人禁不住先睹为快。  ProxyCluster,主要有两大模块组成：   1. 监控  2. 重新配置  目前监控和重配涉及4">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'>
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+<script type="text/javascript">
+  var themeConfig = {
+    fancybox: {
+      enable: true
+    },
+  };
+</script>
+
+
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?91caa81bbeeba8e2b0e648131eccb041";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  <script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-121076689-1', 'auto');
+        ga('send', 'pageview');
+  </script>
+
+
+
+    <title> ProxySQL Cluster 初探 - DBA Life </title>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+   <script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9508537112485384",
+          enable_page_level_ads: true
+     });
+  </script>
+
+  <script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+  </head>
+
+  <body>
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+    <h1 class="site-title">
+        <a href="/." class="logo">DBA Life</a>
+    </h1>
+
+    <nav id="nav-top">
+        
+            <ul id="menu-top" class="nav-top-items">
+                
+                    <li class="menu-item">
+                        <a href="/categories/MySQL/">
+                            
+                            
+                                InnoTech
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/archives/">
+                            
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li class="menu-item">
+                        <a href="/about/">
+                            
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+    <div id="primary" class="home">
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          ProxySQL Cluster 初探
+        
+      </h1>
+
+      <time class="post-time">
+          Oct 09 2018
+      </time>
+    </header>
+
+
+
+    
+            <div class="post-content">
+            <p>PrxoySQL从版本1.4起内置了集群模块，同一集群的配置会相互同步，这对大规模Proxy实例的管理带来了极大的方便。虽然目前相关特性还不是很完善，但这一令人期待的新功能让人禁不住先睹为快。</p>
+<p>ProxyCluster,主要有两大模块组成：</p>
+<ol>
+<li>监控</li>
+<li>重新配置</li>
+</ol>
+<p>目前监控和重配涉及4张配置表，未来会有更多的表会加入：</p>
+<ul>
+<li>mysql_query_rules</li>
+<li>mysql_servers</li>
+<li>mysql_users</li>
+<li>proxysql_servers</li>
+</ul>
+<h4 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h4><p>监控是指各proxySQL 实例相互发送配置信息分别与本地配置信息对比，看是否有变化，然后根据版本和更新时间来同步。这样达到一个配置同步的目的。</p>
+<p>为达到这一实现，ProxySQL引入了一些新的变量：</p>
+<ul>
+<li>admin-checksum_mysql_query_rules<br>boolean值，默认为true. 即当执行load mysql query rules to runtime命令时，proxySQL为新的配置生成checksum. 当设置为flase时，mysql_query_rules的配置变更不会被其它proxySQL 同步。</li>
+<li>admin-checksum_mysql_servers<br>默认为true. 即当执行load mysql servsers to runtime 时，proxySQL 生产新的配置checksum. 这些配置会被同步到其它proxy实例。设为false时，本实例mysql_servers的修改不会被同步到集群中的其它proxySQL实例.</li>
+<li>admin-checksum_mysql_users<br>boolean值，默认true。 即当执行load mysql users to runtime 时，ProxySQL为mysql_users表生成新的配置。当配置为false时，mysql_users表的配置不会被自动同步到其它实例。当你有几百万用户时，建议设置为false, 大量数据的同步会非常慢。</li>
+</ul>
+<p>集群认证相关变量：</p>
+<ul>
+<li>admin-cluster_username and admin-cluster_password，用户配置监控的用户名账号和密码。注意这个账号与密码须同时配置在变量admin-admin_credentials中，不然连接不能成功。如果不配置admin-cluster_username， peoxySQL 不做集群监控。</li>
+</ul>
+<p>检查频率相关控制变量：</p>
+<ul>
+<li>admin-cluster_check_interval_ms<br>checksum检查间隔时间，默认1000毫秒。</li>
+<li>admin-cluster_check_status_frequency<br>多少次checksum检查后，执行一次状态检查。默认10次。</li>
+</ul>
+<p>控制同步写盘的变量：</p>
+<ul>
+<li>admin-cluster_mysql_query_rules_save_to_disk<br>默认为true. 当完成远端同步后，mysql_query_rules表中的新配置立刻写入磁盘。</li>
+<li>admin-cluster_mysql_servers_save_to_disk</li>
+<li>admin-cluster_mysql_users_save_to_disk</li>
+<li>admin-cluster_proxysql_servers_save_to_disk<br>后面三个与第一个意思相同，只是控制的表不同。</li>
+</ul>
+<p>由于集群所有节点（ProxySQL）都对mysql复制架构、只读属性、可用性等进行检查，因此有可能多个ProxySQL 实例的配置在同一时间修改。</p>
+<p>如一台proxySQL 实例发现mysql replication主从发生了切换，自身的相关配置得到更新，有可能同时，另外一个ProxySQL也检查到了这一变化，并更新了自身的相关配置，这样它们就无须再进行同步配置了。</p>
+<p>为此，PrxoySQL可以被配置为不立即同步远程实例的配置，而是等待一定数量次数的检查后再做远程同步（如果这些次数的检查后，本地实例的配置还没有更新）。这会减少监控、同步配置的通信量。相关配置变量：</p>
+<ul>
+<li>admin-cluster_mysql_query_rules_diffs_before_sync<br>针对表mysql_query_rules， 指定多少次不一致检查后执行一次同步，默认3次。</li>
+<li>admin-cluster_mysql_servers_diffs_before_sync</li>
+<li>admin-cluster_mysql_users_diffs_before_sync</li>
+<li>admin-cluster_proxysql_servers_diffs_before_sync<br>后面三个和第一个的意思相同，只是针对的表不同而已。</li>
+</ul>
+<p>相关配置表:</p>
+<ul>
+<li><p>proxysql_servers</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE proxysql_servers (</span><br><span class="line">  hostname VARCHAR NOT NULL,</span><br><span class="line">  port INT NOT NULL DEFAULT 6032,</span><br><span class="line">  weight INT CHECK (weight &gt;= 0) NOT NULL DEFAULT 0,</span><br><span class="line">  comment VARCHAR NOT NULL DEFAULT &apos;&apos;,</span><br><span class="line">  PRIMARY KEY (hostname, port) )</span><br></pre></td></tr></table></figure>
+<p>这个表其实只有hostname这个字段有用，其余默认即可。</p>
+<p>在192.168.216.101新搭建一个proxySQL , 里面没有任何配置，然后与192.168.216.146上的ProxySQL 做成集群，测试一下（注意：新加入的proxySQL实例不会被当做配置源，因为它的配置为空，会清空集群中所有实例的配置）。<br>在两台server上做如下配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; insert into proxysql_servers(hostname)values(&apos;192.168.216.146&apos;);</span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br><span class="line">mysql&gt; select * from proxysql_servers;</span><br><span class="line">+-----------------+------+--------+---------+</span><br><span class="line">| hostname        | port | weight | comment |</span><br><span class="line">+-----------------+------+--------+---------+</span><br><span class="line">| 192.168.216.146 | 6032 | 0      |         |</span><br><span class="line">+-----------------+------+--------+---------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into proxysql_servers(hostname)values(&apos;192.168.216.101&apos;);</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from proxysql_servers;</span><br><span class="line">+-----------------+------+--------+---------+</span><br><span class="line">| hostname        | port | weight | comment |</span><br><span class="line">+-----------------+------+--------+---------+</span><br><span class="line">| 192.168.216.146 | 6032 | 0      |         |</span><br><span class="line">| 192.168.216.101 | 6032 | 0      |         |</span><br><span class="line">+-----------------+------+--------+---------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">load proxysql servers to run;</span><br><span class="line"></span><br><span class="line">save proxysql servers to disk;</span><br></pre></td></tr></table></figure>
+<p>这样表中有了连个proxySQL实例，配置账号密码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set admin-cluster_username=&apos;cluster&apos;;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; set admin-cluster_password=&apos;cluster&apos;;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; set  admin-admin_credentials = &apos;admin:admin;cluster:cluster&apos;;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; load admin variables to run;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; save admin variables to disk;</span><br><span class="line">Query OK, 31 rows affected (0.01 sec)</span><br></pre></td></tr></table></figure>
+<p>然后在主机192.168.216.101上查看ProxySQL的配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">  mysql&gt; select * from mysql_servers;</span><br><span class="line">+--------------+-----------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+</span><br><span class="line">| hostgroup_id | hostname        | port | status | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment |</span><br><span class="line">+--------------+-----------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+</span><br><span class="line">| 0            | 192.168.216.203 | 3306 | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |</span><br><span class="line">| 1            | 192.168.216.203 | 3306 | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |</span><br><span class="line">| 1            | 192.168.216.204 | 3306 | ONLINE | 1      | 0           | 1000            | 30                  | 0       | 0              |         |</span><br><span class="line">+--------------+-----------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+</span><br><span class="line">3 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from mysql_users;</span><br><span class="line">+----------+-------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+</span><br><span class="line">| username | password                                  | active | use_ssl | default_hostgroup | default_schema | schema_locked | transaction_persistent | fast_forward | backend | frontend | max_connections |</span><br><span class="line">+----------+-------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+</span><br><span class="line">| test     | *94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29 | 1      | 0       | 0                 |                | 0             | 1                      | 0            | 0       | 1        | 10000           |</span><br><span class="line">| test     | *94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29 | 1      | 0       | 0                 |                | 0             | 1                      | 0            | 1       | 0        | 10000           |</span><br><span class="line">+----------+-------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p>发现很快配置就被同步。 （这个主机101上的配置是从主机146上的runtime里面获取的，因此mysql_users与146上的mysql_users不同，但与146上的runtime_mysql_users是相同的） 在runtime表中密码是加密的。</p>
+<p>stats库中新增了三张集群相关的统计表</p>
+<ul>
+<li>stats_proxysql_servers_checksums<br>保存proxy中各配置表的checksum,和版本信息。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from stats_proxysql_servers_checksums;</span><br><span class="line">+-----------------+------+-------------------+---------+------------+--------------------+------------+------------+------------+</span><br><span class="line">| hostname        | port | name              | version | epoch      | checksum           | changed_at | updated_at | diff_check |</span><br><span class="line">+-----------------+------+-------------------+---------+------------+--------------------+------------+------------+------------+</span><br><span class="line">| 192.168.216.146 | 6032 | admin_variables   | 0       | 0          |                    | 0          | 1539074037 | 0          |</span><br><span class="line">| 192.168.216.146 | 6032 | mysql_query_rules | 2       | 1538702572 | 0xB8E02057839EA1F2 | 1539073188 | 1539074037 | 0          |</span><br><span class="line">| 192.168.216.146 | 6032 | mysql_servers     | 19      | 1538719906 | 0xD509797D40FCDC20 | 1539073188 | 1539074037 | 0          |</span><br><span class="line">| 192.168.216.146 | 6032 | mysql_users       | 2       | 1536741212 | 0x4E5208945115BC82 | 1539073188 | 1539074037 | 0          |</span><br><span class="line">| 192.168.216.146 | 6032 | mysql_variables   | 0       | 0          |                    | 0          | 1539074037 | 0          |</span><br><span class="line">| 192.168.216.146 | 6032 | proxysql_servers  | 2       | 1539073721 | 0xC281BA1486C7F4E4 | 1539073188 | 1539074037 | 0          |</span><br><span class="line">| 192.168.216.101 | 6032 | admin_variables   | 0       | 0          |                    | 0          | 1539074038 | 0          |</span><br><span class="line">| 192.168.216.101 | 6032 | mysql_query_rules | 2       | 1539073191 | 0xB8E02057839EA1F2 | 1539073192 | 1539074038 | 0          |</span><br><span class="line">| 192.168.216.101 | 6032 | mysql_servers     | 2       | 1539073191 | 0xD509797D40FCDC20 | 1539073192 | 1539074038 | 0          |</span><br><span class="line">| 192.168.216.101 | 6032 | mysql_users       | 2       | 1539073191 | 0x4E5208945115BC82 | 1539073192 | 1539074038 | 0          |</span><br><span class="line">| 192.168.216.101 | 6032 | mysql_variables   | 0       | 0          |                    | 0          | 1539074038 | 0          |</span><br><span class="line">| 192.168.216.101 | 6032 | proxysql_servers  | 2       | 1539073188 | 0xC281BA1486C7F4E4 | 1539073188 | 1539074038 | 0          |</span><br><span class="line">+-----------------+------+-------------------+---------+------------+--------------------+------------+------------+------------+</span><br><span class="line">12 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>stats_proxysql_servers_metrics<br>监控模块使用命令show mysql status检查集群中其它节点的健康状况，但这个表中只记录了很少的信息。当前只是用来debug.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from stats_proxysql_servers_metrics;</span><br><span class="line">  +-----------------+------+--------+---------+------------------+----------+---------------+----------+------------------------------+----------------------------+</span><br><span class="line">  | hostname        | port | weight | comment | response_time_ms | Uptime_s | last_check_ms | Queries  | Client_Connections_connected | Client_Connections_created |</span><br><span class="line">  +-----------------+------+--------+---------+------------------+----------+---------------+----------+------------------------------+----------------------------+</span><br><span class="line">  | 192.168.216.146 | 6032 | 0      |         | 1                | 2419769  | 5537          | 30862078 | 0                            | 284                        |</span><br><span class="line">  | 192.168.216.101 | 6032 | 0      |         | 1                | 8658     | 6195          | 0        | 0                            | 0                          |</span><br><span class="line">  +-----------------+------+--------+---------+------------------+----------+---------------+----------+------------------------------+----------------------------+</span><br><span class="line">  2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>stats_proxysql_servers_status<br>当前尚未使用。</li>
+</ul>
+</li>
+</ul>
+<h4 id="配置同步"><a href="#配置同步" class="headerlink" title="配置同步"></a>配置同步</h4><p>集群中的Proxy SQL实例之间相互监控，当远端配置发生变化时（表stats_proxysql_servers_checksums中配置表的checksum不一致即为发生变化），它会与自己的配置所如下对比</p>
+<ul>
+<li>如果自己的配置版本是1，对方的版本大于1，则立即同步。</li>
+<li>如果自己的配置版本大于1，则要结合变量cluster__name___diffs_before_sync的配置来判断是否同步。如果cluster__name___diffs_before_sync大于零，则要检查（该变量所配置的值）次，之后若本地配置仍未更新则立即同步。</li>
+</ul>
+<p>同步配置的步骤也很简单：<br>首先从对方的表中把配置选出来，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT hostgroup_id, hostname, port, status, weight, compression, max_connections, max_replication_lag, use_ssl, max_latency_ms, comment FROM runtime_mysql_servers;</span><br><span class="line">SELECT writer_hostgroup, reader_hostgroup, comment FROM runtime_mysql_replication_hostgroups;</span><br></pre></td></tr></table></figure></p>
+<p>然后删除本地相关配置表中的数据：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DELETE FROM mysql_servers;</span><br><span class="line">DELETE FROM mysql_replication_hostgroups;</span><br></pre></td></tr></table></figure></p>
+<p>接下来，将远端的配置插入的本地配置表中。<br>再接下来，执行load module_name to runtime;使配置生效。<br>是否要持久化？那要看变量cluster__name__save_to_disk的配置，如果为true,则执行SAVE module_name TO DISK进行持久化。</p>
+<p>这样同步过程就完成了。可以看到同步并不是增量同步，每次都是全量，如果表中服务器很多，或路由配置很多，每次同步都会比较耗时，也消耗不小的带宽。当前版本是proxySQL1.4.12， proxySQL2.0 已经在rc中了，从1.4直接升级到了2.0相信会有不小的变化吧？！</p>
+
+            </div>
+          
+
+    
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/ProxySQL/">ProxySQL</a>
+		  
+		</div>
+		
+
+        
+        
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/2018/10/07/ProxySQL变量配置解说/">
+        <span class="next-text nav-default">ProxySQL变量配置解说</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+        
+
+
+
+<div id="gcontainer"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  id: 'ProxySQL Cluster 初探', // 可选。默认为 location.href
+  owner: 'mount565',
+  repo: 'gitment-comments',
+  oauth: {
+    client_id: '09bfef25af96c2218b13',
+    client_secret: '192a84d4a407523b4db0b65ffbef01098d2fefa3',
+  },
+})
+gitment.render('gcontainer')
+</script>
+
+
+
+
+      </footer>
+    
+  </article>
+
+    </div>
+    <div id="secondary">
+    
+    <section id="widget-custom" class="widget-area">
+    <br/>
+      <!-- adsense code goes here  -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 200*200-view-ad -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:200px;height:200px"
+     data-ad-client="ca-pub-9508537112485384"
+     data-ad-slot="9398928824"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_categories">
+        <h3 class="widget-title">Categories</h3>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">2</span></li></ul>
+    </section>
+
+
+    
+    <section id="tags" class="widget-area widget_tags">
+        <h3 class="widget-title">Tags</h3>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+    </section>
+
+
+    
+    <section id="widget-custom" class="widget-area">
+        <h3 class="widget-title">Links</h3>
+        <a href="http://bohr.me/" target="_blank">bohr</a>
+    </section>
+
+
+</div>
+
+
+      </div>
+
+      <footer id="colophon"><span class="copyright-year">
+    
+        &copy;
+    
+        2017 -
+    
+    2018
+    <span class="footer-author">William Wang.</span>
+    <span class="power-by">
+        Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
+    </span>
+</span>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    <script type="text/javascript" src="/js/src/theme.js?v=1.1"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=1.1"></script>
+
+  </body>
+</html>

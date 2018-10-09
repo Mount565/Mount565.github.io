@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="ProxySQL中有一系列变量来供用户调优配置或功能配置。这些变量存放在表global_varialbes中。其中大部分变量可以在线修改，即时生效（执行LOAD MYSQL VARIABLES TO RUNTIME or LOAD ADMIN VARIABLES TO RUNTIME），但变量：ad">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-07T08:26:21.449Z">
+<meta property="og:updated_time" content="2018-10-09T11:17:43.161Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ProxySQL变量配置解说">
 <meta name="twitter:description" content="ProxySQL中有一系列变量来供用户调优配置或功能配置。这些变量存放在表global_varialbes中。其中大部分变量可以在线修改，即时生效（执行LOAD MYSQL VARIABLES TO RUNTIME or LOAD ADMIN VARIABLES TO RUNTIME），但变量：ad">
@@ -291,6 +291,22 @@
 <li><p>mysql-wait_timeout<br>当客户端与proxy SQL的连接闲置超过这一时间时，proxySQL会kill掉客户端连接。默认28800000毫秒 (8 hours)</p>
 </li>
 </ul>
+<h4 id="Cluster-相关变量"><a href="#Cluster-相关变量" class="headerlink" title="Cluster 相关变量"></a>Cluster 相关变量</h4><ul>
+<li>admin-checksum_mysql_query_rules<br>boolean值，默认为true. 即当执行load mysql query rules to runtime命令时，proxySQL为新的配置生成checksum. 当设置为flase时，mysql_query_rules的配置变更不会被其它proxySQL 同步。</li>
+<li>admin-checksum_mysql_servers<br>默认为true. 即当执行load mysql servsers to runtime 时，proxySQL 生产新的配置checksum. 这些配置会被同步到其它proxy实例。设为false时，本实例mysql_servers的修改不会被同步到集群中的其它proxySQL实例.</li>
+<li>admin-checksum_mysql_users<br>boolean值，默认true。 即当执行load mysql users to runtime 时，ProxySQL为mysql_users表生成新的配置。当配置为false时，mysql_users表的配置不会被自动同步到其它实例。当你有几百万用户时，建议设置为false, 大量数据的同步会非常慢。</li>
+<li>admin-cluster_username and admin-cluster_password，用户配置监控的用户名账号和密码。注意这个账号与密码须同时配置在变量admin-admin_credentials中，不然连接不能成功。如果不配置admin-cluster_username， peoxySQL 不做集群监控。</li>
+<li>admin-cluster_check_interval_ms<br>checksum检查间隔时间，默认1000毫秒。</li>
+<li>admin-cluster_check_status_frequency<br>多少次checksum检查后，执行一次状态检查。默认10次。</li>
+<li>admin-cluster_mysql_query_rules_save_to_disk<br>默认为true. 当完成远端同步后，mysql_query_rules表中的新配置立刻写入磁盘。</li>
+<li>admin-cluster_mysql_servers_save_to_disk  </li>
+<li>admin-cluster_mysql_users_save_to_disk</li>
+<li>admin-cluster_proxysql_servers_save_to_disk<br>后面三个与第一个意思相同，只是控制的表不同。</li>
+<li>admin-cluster_mysql_query_rules_diffs_before_sync<br>针对表mysql_query_rules， 指定多少次不一致检查后执行一次同步，默认3次。</li>
+<li>admin-cluster_mysql_servers_diffs_before_sync  </li>
+<li>admin-cluster_mysql_users_diffs_before_sync</li>
+<li>admin-cluster_proxysql_servers_diffs_before_sync<br>后面三个和第一个的意思相同，只是针对的表不同而已。</li>
+</ul>
 <h5 id="更多参考"><a href="#更多参考" class="headerlink" title="更多参考"></a>更多参考</h5><p><a href="https://github.com/sysown/proxysql/wiki/Global-variables" target="_blank" rel="noopener">ref</a></p>
 
             </div>
@@ -309,6 +325,12 @@
         
         
   <nav class="post-nav">
+    
+      <a class="prev" href="/2018/10/09/ProxySQL-Cluster-初探/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">ProxySQL Cluster 初探</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
     
     
       <a class="next" href="/2018/08/28/MySQL5-6-Slave复制报1837导致事务不一致/">
@@ -367,14 +389,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">1</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">2</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
