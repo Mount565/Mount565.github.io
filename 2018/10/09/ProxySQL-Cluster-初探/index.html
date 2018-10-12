@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="PrxoySQL从版本1.4起内置了集群模块，同一集群的配置会相互同步，这对大规模Proxy实例的管理带来了极大的方便。虽然目前相关特性还不是很完善，但这一令人期待的新功能让人禁不住先睹为快。  ProxyCluster,主要有两大模块组成：   1. 监控  2. 重新配置  目前监控和重配涉及4">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-09T11:22:16.849Z">
+<meta property="og:updated_time" content="2018-10-12T12:29:08.275Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ProxySQL Cluster 初探">
 <meta name="twitter:description" content="PrxoySQL从版本1.4起内置了集群模块，同一集群的配置会相互同步，这对大规模Proxy实例的管理带来了极大的方便。虽然目前相关特性还不是很完善，但这一令人期待的新功能让人禁不住先睹为快。  ProxyCluster,主要有两大模块组成：   1. 监控  2. 重新配置  目前监控和重配涉及4">
@@ -196,6 +196,7 @@
 <li>mysql_users</li>
 <li>proxysql_servers</li>
 </ul>
+<p><em>注意：当前版本v1.4.12,无法同步表global_variables。这意味着对单个实例变量的修改，无法同步到集群中所有实例。需要通过ansible或其他类似工具，对集群中各实例统一配置。</em><br>不同步global_variables也是有道理的。如果有一个200台的ProxySQL cluster，每台都启用monitor的话，那么后端mysql server中仅monitor连接就有200个。因此不同步global_variables,可以允许启用集群中的一台Proxy来monitor后端mysql servers</p>
 <h4 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h4><p>监控是指各proxySQL 实例相互发送配置信息分别与本地配置信息对比，看是否有变化，然后根据版本和更新时间来同步。这样达到一个配置同步的目的。</p>
 <p>为达到这一实现，ProxySQL引入了一些新的变量：</p>
 <ul>
@@ -280,6 +281,12 @@
         
   <nav class="post-nav">
     
+      <a class="prev" href="/2018/10/12/ProxySQL的服务发现机制/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">ProxySQL的服务发现机制</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
     
       <a class="next" href="/2018/10/07/ProxySQL变量配置解说/">
         <span class="next-text nav-default">ProxySQL变量配置解说</span>
@@ -337,14 +344,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">2</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">3</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
