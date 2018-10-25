@@ -12,12 +12,12 @@
 
 
 
-  <meta name="description" content="MyCAT高可用的思考"/>
+  <meta name="description" content="ProxySQL 之Multiplexing"/>
 
 
 
 
-  <meta name="keywords" content="MyCAT," />
+  <meta name="keywords" content="ProxySQL," />
 
 
 
@@ -32,21 +32,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/06/19/MyCAT高可用的思考/"/>
+<link rel="canonical" href="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/"/>
 
 
-<meta name="description" content="MyCAT在分库分表和读写分离领域给出了较为完善的解决方案，特别是分表规则，MyCAT团队积极探索实现十几种分表分表规则，对业界做出了巨大的贡献。  在高可用领域MyCAT也有实现，可惜实现的比较粗糙，还不能达到一个生产可用的级别。  MyCAT的高可用实现 通过在schema.xml配置文件中，多">
-<meta name="keywords" content="MyCAT">
+<meta name="description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
+<meta name="keywords" content="ProxySQL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MyCAT高可用的思考">
-<meta property="og:url" content="https://dbalife.info/2018/06/19/MyCAT高可用的思考/index.html">
+<meta property="og:title" content="ProxySQL 之Multiplexing">
+<meta property="og:url" content="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="MyCAT在分库分表和读写分离领域给出了较为完善的解决方案，特别是分表规则，MyCAT团队积极探索实现十几种分表分表规则，对业界做出了巨大的贡献。  在高可用领域MyCAT也有实现，可惜实现的比较粗糙，还不能达到一个生产可用的级别。  MyCAT的高可用实现 通过在schema.xml配置文件中，多">
+<meta property="og:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-21T22:23:57.343Z">
+<meta property="og:updated_time" content="2018-10-25T12:35:10.462Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MyCAT高可用的思考">
-<meta name="twitter:description" content="MyCAT在分库分表和读写分离领域给出了较为完善的解决方案，特别是分表规则，MyCAT团队积极探索实现十几种分表分表规则，对业界做出了巨大的贡献。  在高可用领域MyCAT也有实现，可惜实现的比较粗糙，还不能达到一个生产可用的级别。  MyCAT的高可用实现 通过在schema.xml配置文件中，多">
+<meta name="twitter:title" content="ProxySQL 之Multiplexing">
+<meta name="twitter:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +93,7 @@
 
 
 
-    <title> MyCAT高可用的思考 - DBA Life </title>
+    <title> ProxySQL 之Multiplexing - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +170,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          MyCAT高可用的思考
+          ProxySQL 之Multiplexing
         
       </h1>
 
       <time class="post-time">
-          Jun 19 2018
+          Oct 25 2018
       </time>
     </header>
 
@@ -183,23 +183,17 @@
 
     
             <div class="post-content">
-            <p>MyCAT在分库分表和读写分离领域给出了较为完善的解决方案，特别是分表规则，MyCAT团队积极探索实现十几种分表分表规则，对业界做出了巨大的贡献。</p>
-<p>在高可用领域MyCAT也有实现，可惜实现的比较粗糙，还不能达到一个生产可用的级别。</p>
-<h4 id="MyCAT的高可用实现"><a href="#MyCAT的高可用实现" class="headerlink" title="MyCAT的高可用实现"></a>MyCAT的高可用实现</h4><p>通过在schema.xml配置文件中，多配置一个writeHost节点，可在第一个writeHost挂掉之后，启用第二个writeHost.当然最终是否启用还取决于其它的一些判断，如slave 是否有延迟等。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;dataHost name=&quot;dh1&quot; maxCon=&quot;1000&quot; minCon=&quot;10&quot; balance=&quot;1&quot;</span><br><span class="line">                     writeType=&quot;0&quot; dbType=&quot;mysql&quot; dbDriver=&quot;native&quot; switchType=&quot;2&quot;  slaveThreshold=&quot;100&quot;&gt;</span><br><span class="line">           &lt;heartbeat&gt;show slave status&lt;/heartbeat&gt;</span><br><span class="line">           &lt;!-- can have multi write hosts --&gt;</span><br><span class="line">           &lt;writeHost host=&quot;hostM2&quot; url=&quot;192.168.216.161:3306&quot; user=&quot;test&quot;</span><br><span class="line">                              password=&quot;test&quot;&gt;</span><br><span class="line">                   &lt;!-- can have multi read hosts --&gt;</span><br><span class="line">           &lt;/writeHost&gt;</span><br><span class="line">           &lt;writeHost host=&quot;hostS2&quot; url=&quot;192.168.216.201:3306&quot; user=&quot;test&quot; password=&quot;test&quot; /&gt;</span><br><span class="line">           &lt;!--</span><br><span class="line">                                 &lt;writeHost host=&quot;hostS1&quot; url=&quot;localhost:3316&quot; user=&quot;root&quot;</span><br><span class="line">                              password=&quot;123456&quot; /&gt; --&gt;</span><br><span class="line">           &lt;!-- &lt;writeHost host=&quot;hostM2&quot; url=&quot;localhost:3316&quot; user=&quot;root&quot; password=&quot;123456&quot;/&gt; --&gt;</span><br><span class="line">   &lt;/dataHost&gt;</span><br></pre></td></tr></table></figure>
-<p>MyCAT当前的高可用实现有如下问题</p>
-<ol>
-<li>当主库crash时，其最后的binlog可能未被从节点复制到，导致事务丢失。</li>
-<li>当从节点有SQL延迟超过某一设定阈值（slaveThreshold）时，不能切换（不能等待从节点应用完binlog后再切换），其实这个设定的阈值应该是0，设置任何大于0的值都可能会造成事务commit顺序和master不一致。因为切换后会造成新的dml操作（来自于应用）和尚未应用的binlog（sql延迟）同时写入，这对数据的一致性和准确性都会造成危害！</li>
-</ol>
-<h4 id="改进思路"><a href="#改进思路" class="headerlink" title="改进思路"></a>改进思路</h4><p>我觉得MyCAT可以借鉴mysqlfailover高可用脚本的实现。<a href="https://dev.mysql.com/doc/mysql-utilities/1.6/en/utils-task-autofailover.html" target="_blank" rel="noopener">mysqlfailover</a>是mysql官方提供的mysql utilities中的一个高可用工具(需要启用GTID，才能使用)。mysqlfailover会监控拓扑架构中各节点的状态，当master crash时，它会启用一个slave当做新的master,但在启用它之前，它会做一些安全检查：</p>
-<ol>
-<li>它会等待该节点的binlog应用完成再切换（去掉只读属性）</li>
-<li>它会判断与其它从节点相比，该节点是否复制到最新的事务（相对于几个从节点来说）。如果不是，它会把该节点配置成含有更新事务的从节点的从节点，复制到最新的事务。然后再将其提升为master.</li>
-</ol>
-<p>mysqlfailover不能自动做到binlog补偿（像MHA那样）,但利用mysql5.7的增强半同步，设置slave永不退化为异步，一样可以做到像mha那样0事务丢失切换（其实比MHA更好，因为当主库的操作系统挂掉时，mha是无法binlog补偿的，在mysql5.7增强半同步下，MHA的binlog补偿方式不再是优选）。相关半同步配置：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rpl_semi_sync_master_wait_for_slave_count=1</span><br><span class="line">rpl_semi_sync_master_wait_no_slave=ON</span><br><span class="line">rpl_semi_sync_master_timeout=1000000000000000000</span><br><span class="line">rpl_semi_sync_master_wait_point=AFTER_SYNC</span><br></pre></td></tr></table></figure></p>
-<p>这种方案下，从节点数量一定要&gt;1, 不然万一有网络问题（或从节点挂掉）造成从节点无法及时向master发送ack,主库等待而不超时，事务被挂起，业务无法继续。</p>
-<p>mysqlfailover的实现思路完全可以做到MyCAT里面，再结合mysql5.7的增强半同步，这样一个高可用结构就接近完美了（不敢说完美）！</p>
+            <p>关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见<a href="http://seanlook.com/2017/04/17/mysql-proxysql-multiplexing/" target="_blank" rel="noopener">这里</a> 或 <a href="https://www.awsinfradb.com/single-post/2017/03/06/Multiplexing-in-ProxySQL" target="_blank" rel="noopener">这里</a>. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。</p>
+<p>我觉得有两个关键点不易理解：</p>
+<ul>
+<li>mysql_users.transaction_persistent<br>单独理解这个参数，也很简单。设置为1后就是确保一个事务内所有的SQL都发送到同一个连接。这时路由规则已经被禁用，直到事务commit.</li>
+<li>mysql_query_rules.multiplex<br>Multiplex 这个参数可以针对某条规则设置的，当然也可针对全局（SET mysql-multiplexing=’false’）。禁用multiplex后，后端连接会与前端绑定，但路由规则是起作用的。<br>怎么理解？？？<br>举例：<br>当执行了一条会禁用multiplex的语句，如select @v;.ProxySQL会根据路由规则，在指定的hostgroup（readers group）中的某台server上建立一个后端连接，这个连接会与前端连接绑定。然后SQL路由规则依然生效，但凡是路由到readers group的SQL都会使用同一个连接，将SQL发送到同一台后端server。而路由到writergroup的SQL是可以更换writer group的后台连接的。</li>
+</ul>
+<p>通过上面的描述，应该可以体会到这两个特性的不同。</p>
+<p>transaction_persistent 针对用户设置，而multiplexing则是针对规则设置。<br>transaction_persistent <strong>一旦开启事务，事务内的SQL不再走路由，都会发给同一个连接</strong>。而multiplexing的禁用同样会发生连接绑定,但路由规则还会起作用 ，只有路由到与绑定连接所在的后端server处于同一hostgroup时，才会使用所绑定的连接，而路由到其它的hostgroup时，连接是可以更换的。</p>
+<p>再举例： 有一个Writer Hostgroup (a),里面有一台server a. 一个Reader Hostgroup (b,c,d)里面有三台server: b、c、d. 客户端执行了一个SQL：select @v, 这会导致禁用multiplexing. 假如这个语句在server b上执行，那么后端ProxySQL与server b的连接就会与client 连接绑定。这个client以后任何路由到reader hostgroup的query都会使用这个连接发送到server b , 而不会再发送到server c,d. 但这个client路由到Writer hostgroup的query则是可以更换连接与访问server a的。这种连接绑定可以成为<strong>同一个hostgroup内连接绑定</strong>！</p>
+<p>由此可以看到，启用transaction_persistent 是连接事务内强绑定，SQL不再走路由规则，事务完成后解除绑定。而multiplex针对某些语句（包括active transaction）自动禁用，禁用后连接不再被复用，与client绑定，但路由规则还是起作用。如果客户端的SQL因为路由规则，被分发到其它hostgroup(不是所绑定的连接后端server所在的hostgroup),ProxySQL还是会分配其它hostgroup的连接个client来执行SQL。 这时来看，好像连接并没有绑定！其实它只是针对同一个hostgroup来说是绑定了的。</p>
+<p>说的挺啰嗦，希望能说明白！</p>
 
             </div>
           
@@ -209,7 +203,7 @@
 		
 		<div class="post-tags">
 		  
-			<a href="/tags/MyCAT/">MyCAT</a>
+			<a href="/tags/ProxySQL/">ProxySQL</a>
 		  
 		</div>
 		
@@ -218,15 +212,9 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/06/21/Group-Replicatoin-Multi-Primary测试/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">Group Replicatoin Multi-Primary测试</span>
-        <span class="prev-text nav-mobile">Prev</span>
-      </a>
     
-    
-      <a class="next" href="/2018/06/18/DBA误操作数据恢复方式/">
-        <span class="next-text nav-default">DBA误操作数据恢复方式</span>
+      <a class="next" href="/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/">
+        <span class="next-text nav-default">ProxySQL-Writing Query routed to Readers hostgroup</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -242,7 +230,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'MyCAT高可用的思考', // 可选。默认为 location.href
+  id: 'ProxySQL 之Multiplexing', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {
