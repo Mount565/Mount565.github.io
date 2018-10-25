@@ -35,18 +35,18 @@
 <link rel="canonical" href="https://dbalife.info/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/"/>
 
 
-<meta name="description" content="I tried to report this as a bug to the author. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles. So to us">
+<meta name="description" content="I tried to report this as a bug to the authorissue1755. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles.">
 <meta name="keywords" content="ProxySQL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ProxySQL-Writing Query routed to Readers hostgroup">
 <meta property="og:url" content="https://dbalife.info/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="I tried to report this as a bug to the author. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles. So to us">
+<meta property="og:description" content="I tried to report this as a bug to the authorissue1755. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles.">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-25T12:33:54.853Z">
+<meta property="og:updated_time" content="2018-10-25T13:13:54.504Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ProxySQL-Writing Query routed to Readers hostgroup">
-<meta name="twitter:description" content="I tried to report this as a bug to the author. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles. So to us">
+<meta name="twitter:description" content="I tried to report this as a bug to the authorissue1755. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles.">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -183,7 +183,7 @@
 
     
             <div class="post-content">
-            <p>I tried to report this as a bug to the author. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles. So to use ProxySQL , it’s necessary to enable global autocommit on the backend mysql servers.</p>
+            <p>I tried to report this as a bug to the author<a href="https://github.com/sysown/proxysql/issues/1755" target="_blank" rel="noopener">issue1755</a>. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles. So to use ProxySQL , it’s necessary to enable global autocommit on the backend mysql servers.</p>
 <h5 id="Suspected-Bug"><a href="#Suspected-Bug" class="headerlink" title="Suspected Bug"></a>Suspected Bug</h5><p>ProxySQL version 1.4.12-9-g216b872<br>MySQL version : 5.7.22<br>CentOS :6.9</p>
 <p><strong>How to repeat</strong></p>
 <ol>

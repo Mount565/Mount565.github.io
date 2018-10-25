@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-25T12:35:10.462Z">
+<meta property="og:updated_time" content="2018-10-25T12:56:13.791Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ProxySQL 之Multiplexing">
 <meta name="twitter:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
@@ -193,6 +193,7 @@
 <p>transaction_persistent 针对用户设置，而multiplexing则是针对规则设置。<br>transaction_persistent <strong>一旦开启事务，事务内的SQL不再走路由，都会发给同一个连接</strong>。而multiplexing的禁用同样会发生连接绑定,但路由规则还会起作用 ，只有路由到与绑定连接所在的后端server处于同一hostgroup时，才会使用所绑定的连接，而路由到其它的hostgroup时，连接是可以更换的。</p>
 <p>再举例： 有一个Writer Hostgroup (a),里面有一台server a. 一个Reader Hostgroup (b,c,d)里面有三台server: b、c、d. 客户端执行了一个SQL：select @v, 这会导致禁用multiplexing. 假如这个语句在server b上执行，那么后端ProxySQL与server b的连接就会与client 连接绑定。这个client以后任何路由到reader hostgroup的query都会使用这个连接发送到server b , 而不会再发送到server c,d. 但这个client路由到Writer hostgroup的query则是可以更换连接与访问server a的。这种连接绑定可以成为<strong>同一个hostgroup内连接绑定</strong>！</p>
 <p>由此可以看到，启用transaction_persistent 是连接事务内强绑定，SQL不再走路由规则，事务完成后解除绑定。而multiplex针对某些语句（包括active transaction）自动禁用，禁用后连接不再被复用，与client绑定，但路由规则还是起作用。如果客户端的SQL因为路由规则，被分发到其它hostgroup(不是所绑定的连接后端server所在的hostgroup),ProxySQL还是会分配其它hostgroup的连接个client来执行SQL。 这时来看，好像连接并没有绑定！其实它只是针对同一个hostgroup来说是绑定了的。</p>
+<p>对于某些命令（如select @v1），multipex被禁用后，后台连接在client连接退出时，会自动销毁。也许重置连接的相关变量比重新建立一个连接相比开销更大吧！</p>
 <p>说的挺啰嗦，希望能说明白！</p>
 
             </div>
