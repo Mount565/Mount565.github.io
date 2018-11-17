@@ -12,12 +12,12 @@
 
 
 
-  <meta name="description" content="ProxySQL 之Multiplexing"/>
+  <meta name="description" content="MySQL filesort 算法探秘"/>
 
 
 
 
-  <meta name="keywords" content="ProxySQL," />
+  <meta name="keywords" content="MySQL," />
 
 
 
@@ -32,21 +32,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/"/>
+<link rel="canonical" href="https://dbalife.info/2018/11/17/MySQL-filesort-算法探秘/"/>
 
 
-<meta name="description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
-<meta name="keywords" content="ProxySQL">
+<meta name="description" content="filesort直接影响SQL的执行效率，使导致慢查询的罪魁祸首。无论从研发人员还是DBA都有必要对这一元凶加深理解。今天我花了些时间研究了下官方文档，写一片总结加深理解。  MySQL 针对filesort实现了三种算法，这三种算法可以说是在一种算法上针对不同使用场景的改进，以至于它们都没有一个正">
+<meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ProxySQL 之Multiplexing">
-<meta property="og:url" content="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/index.html">
+<meta property="og:title" content="MySQL filesort 算法探秘">
+<meta property="og:url" content="https://dbalife.info/2018/11/17/MySQL-filesort-算法探秘/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
+<meta property="og:description" content="filesort直接影响SQL的执行效率，使导致慢查询的罪魁祸首。无论从研发人员还是DBA都有必要对这一元凶加深理解。今天我花了些时间研究了下官方文档，写一片总结加深理解。  MySQL 针对filesort实现了三种算法，这三种算法可以说是在一种算法上针对不同使用场景的改进，以至于它们都没有一个正">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-25T12:56:13.791Z">
+<meta property="og:updated_time" content="2018-11-17T14:20:37.298Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="ProxySQL 之Multiplexing">
-<meta name="twitter:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
+<meta name="twitter:title" content="MySQL filesort 算法探秘">
+<meta name="twitter:description" content="filesort直接影响SQL的执行效率，使导致慢查询的罪魁祸首。无论从研发人员还是DBA都有必要对这一元凶加深理解。今天我花了些时间研究了下官方文档，写一片总结加深理解。  MySQL 针对filesort实现了三种算法，这三种算法可以说是在一种算法上针对不同使用场景的改进，以至于它们都没有一个正">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +93,7 @@
 
 
 
-    <title> ProxySQL 之Multiplexing - DBA Life </title>
+    <title> MySQL filesort 算法探秘 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +170,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          ProxySQL 之Multiplexing
+          MySQL filesort 算法探秘
         
       </h1>
 
       <time class="post-time">
-          Oct 25 2018
+          Nov 17 2018
       </time>
     </header>
 
@@ -183,18 +183,33 @@
 
     
             <div class="post-content">
-            <p>关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见<a href="http://seanlook.com/2017/04/17/mysql-proxysql-multiplexing/" target="_blank" rel="noopener">这里</a> 或 <a href="https://www.awsinfradb.com/single-post/2017/03/06/Multiplexing-in-ProxySQL" target="_blank" rel="noopener">这里</a>. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。</p>
-<p>我觉得有两个关键点不易理解：</p>
-<ul>
-<li>mysql_users.transaction_persistent<br>单独理解这个参数，也很简单。设置为1后就是确保一个事务内所有的SQL都发送到同一个连接。这时路由规则已经被禁用，直到事务commit.</li>
-<li>mysql_query_rules.multiplex<br>Multiplex 这个参数可以针对某条规则设置的，当然也可针对全局（SET mysql-multiplexing=’false’）。禁用multiplex后，后端连接会与前端绑定，但路由规则是起作用的。<br>怎么理解？？？<br>举例：<br>当执行了一条会禁用multiplex的语句，如select @v;.ProxySQL会根据路由规则，在指定的hostgroup（readers group）中的某台server上建立一个后端连接，这个连接会与前端连接绑定。然后SQL路由规则依然生效，但凡是路由到readers group的SQL都会使用同一个连接，将SQL发送到同一台后端server。而路由到writergroup的SQL是可以更换writer group的后台连接的。</li>
-</ul>
-<p>通过上面的描述，应该可以体会到这两个特性的不同。</p>
-<p>transaction_persistent 针对用户设置，而multiplexing则是针对规则设置。<br>transaction_persistent <strong>一旦开启事务，事务内的SQL不再走路由，都会发给同一个连接</strong>。而multiplexing的禁用同样会发生连接绑定,但路由规则还会起作用 ，只有路由到与绑定连接所在的后端server处于同一hostgroup时，才会使用所绑定的连接，而路由到其它的hostgroup时，连接是可以更换的。</p>
-<p>再举例： 有一个Writer Hostgroup (a),里面有一台server a. 一个Reader Hostgroup (b,c,d)里面有三台server: b、c、d. 客户端执行了一个SQL：select @v, 这会导致禁用multiplexing. 假如这个语句在server b上执行，那么后端ProxySQL与server b的连接就会与client 连接绑定。这个client以后任何路由到reader hostgroup的query都会使用这个连接发送到server b , 而不会再发送到server c,d. 但这个client路由到Writer hostgroup的query则是可以更换连接与访问server a的。这种连接绑定可以成为<strong>同一个hostgroup内连接绑定</strong>！</p>
-<p>由此可以看到，启用transaction_persistent 是连接事务内强绑定，SQL不再走路由规则，事务完成后解除绑定。而multiplex针对某些语句（包括active transaction）自动禁用，禁用后连接不再被复用，与client绑定，但路由规则还是起作用。如果客户端的SQL因为路由规则，被分发到其它hostgroup(不是所绑定的连接后端server所在的hostgroup),ProxySQL还是会分配其它hostgroup的连接个client来执行SQL。 这时来看，好像连接并没有绑定！其实它只是针对同一个hostgroup来说是绑定了的。</p>
-<p>对于某些命令（如select @v1），multipex被禁用后，后台连接在client连接退出时，会自动销毁。也许重置连接的相关变量比重新建立一个连接相比开销更大吧！</p>
-<p>说的挺啰嗦，希望能说明白！</p>
+            <p>filesort直接影响SQL的执行效率，使导致慢查询的罪魁祸首。无论从研发人员还是DBA都有必要对这一元凶加深理解。今天我花了些时间研究了下官方文档，写一片总结加深理解。</p>
+<p>MySQL 针对filesort实现了三种算法，这三种算法可以说是在一种算法上针对不同使用场景的改进，以至于它们都没有一个正规的名字。</p>
+<h4 id="原始算法"><a href="#原始算法" class="headerlink" title="原始算法"></a>原始算法</h4><p>这是mysql最初实现的排序算法，它是这样工作的：</p>
+<ol>
+<li>读取表中所有满足where条件的排序字段和相应的row ID.</li>
+<li>将每一行满足条件的排序字段和row ID存入sort buffer中。sort buffer满了，就按排序字段（order by）执行一次快速排序，把排序后的数据写入临时文件。</li>
+<li>重复上述步骤，直到所有的行都被扫描。这样就有了许多临时文件，且临时文件中的数据都是有序的。</li>
+<li>合并临时文件，因为每个临时文件都是按排序字段排好了顺序，合并排序变得快速高效。多次合并后变成了两个临时文件，合并这两个临时文件时只写入rowID到最后的结果文件，这样减少了不必要的IO。</li>
+<li>这样我们有了一个结果文件，里面都是要查询的RowID, 并且这些row ID 是按排序字段排序的。依据这些rowID 从表中读取所查询数据即可。</li>
+</ol>
+<p>这种算法的缺点很明显，就是要两次扫描全表，且第二次是随机访问，效率很低。于是就有了第二种算法。</p>
+<h4 id="优化后的排序算法"><a href="#优化后的排序算法" class="headerlink" title="优化后的排序算法"></a>优化后的排序算法</h4><p>这种算法比第一种类似，但它避免了两次全表扫描。遗憾的是不是所有场景下都能使用！它是这样工作的：</p>
+<ol>
+<li>读取所有满足where条件的行。</li>
+<li>对每一行将查询的字段和排序字段一起存入sort buffer。注意这里就是区别了：第一中算法只保存了行的row ID和排序字段，这里保存了查询的所有字段（select 后面的字段）和order by 的字段。</li>
+<li>sort buffer 满了，就按排序字段快速排序，将结果存入临时文件。</li>
+<li>多次合并临时文件至一个后，把要查询的字段从临时文件中返回给上层即完成了任务。</li>
+</ol>
+<p>这中算法的优点是避免了两次全表扫描，缺点也很明显，就是增加了不少IO负载。因为它会产生更多的临时文件。而且只有优化器发现当所查询字段的总长度小于变量max_length_for_sort_data的值时才会选用这种算法。如果所查询的字段中包含text，blog,则立刻选择第一种算法。</p>
+<h4 id="内存中的filesort"><a href="#内存中的filesort" class="headerlink" title="内存中的filesort"></a>内存中的filesort</h4><p>这是第三种排序算法，它的特点是完全在内存中，不写临时文件，但它的使用场景更小。它只针对简单的order by limit (m,)n 语句使用。它的原理是这样的：sort buffer 的大小由变量sort_buffer_size控制。当所查询的结果集很小，sort buffer可以完全容纳时，就不需要再写临时文件，然后merge file了。完全可以按照排序字段在sort buffer 中排序，然后使用优先队列，淘汰掉排在前面的数据（如order by a limit 5, 发现更小的值a,就将队列中最大的a换出），因为它们不是查询想要的数据。它是这样工作的：</p>
+<ol>
+<li>读取满足where 条件的所有行</li>
+<li>将查询的字段和排序字段，作为一条记录插入优先队列，这个优先队列是按照排序字段自动排序的。</li>
+<li>当优先队列满了，就挤出最前面的数据，直到扫描完所有的行。然后返回队列中的N行即可。如果指定M, 则跳过M行返回N行。（显然如果M很大，这中算法也用不了，因为sort buffer大小是有限的，它要至少能保存M+N行数据时才能使用）</li>
+</ol>
+<p>这种算法属于CPU密集型算法，它不需要消耗IO资源，速度也很快，但使用场景很苛刻。优化器要考虑sort buffer 大小，M，N的值，所查询的row size等多种因素来决定选用算法。</p>
+<p>啥？ 为啥不用索引？ 用索引当然很快了，filesort是在没有索引的情况下的无奈之举啊！</p>
 
             </div>
           
@@ -204,7 +219,7 @@
 		
 		<div class="post-tags">
 		  
-			<a href="/tags/ProxySQL/">ProxySQL</a>
+			<a href="/tags/MySQL/">MySQL</a>
 		  
 		</div>
 		
@@ -213,15 +228,9 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/11/02/xtrabackup增量备份造成磁盘Read-IO飙升记/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">xtrabackup增量备份造成磁盘Read IO飙升记</span>
-        <span class="prev-text nav-mobile">Prev</span>
-      </a>
     
-    
-      <a class="next" href="/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/">
-        <span class="next-text nav-default">ProxySQL-Writing Query routed to Readers hostgroup</span>
+      <a class="next" href="/2018/11/09/ProxySQL测试报告/">
+        <span class="next-text nav-default">ProxySQL测试报告</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -237,7 +246,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'ProxySQL 之Multiplexing', // 可选。默认为 location.href
+  id: 'MySQL filesort 算法探秘', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {
