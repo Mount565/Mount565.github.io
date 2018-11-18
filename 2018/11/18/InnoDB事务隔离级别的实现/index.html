@@ -12,12 +12,12 @@
 
 
 
-  <meta name="description" content="DBA误操作数据恢复方式"/>
+  <meta name="description" content="InnoDB事务隔离级别的实现"/>
 
 
 
 
-  <meta name="keywords" content="OPS,MySQL," />
+  <meta name="keywords" content="MySQL," />
 
 
 
@@ -32,21 +32,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/06/18/DBA误操作数据恢复方式/"/>
+<link rel="canonical" href="https://dbalife.info/2018/11/18/InnoDB事务隔离级别的实现/"/>
 
 
-<meta name="description" content="DBA直接面对生产一线数据，且拥有最高权限，DBA误操作往往是致命，因此操作生产环境，DBA往往非常谨慎！尽管如此，但误操作还是难以完全避免。常见的误操作有：delete/update table 忘了where条件，删错表了，删错库了等。一旦发生误操作，恢复数据该如何恢复？  要是发生了误操作可千">
-<meta name="keywords" content="OPS,MySQL">
+<meta name="description" content="SQL标准中定义了四种隔离级别：未提交读（read uncommitted），提交读（read committed），重复读（repeatable read），串行读（serializable），任何一款数据库都应遵照SQL标准实现这些隔离级别（虽然有一些例外，因为数据厂商都有一些私有的标准。如Or">
+<meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="DBA误操作数据恢复方式">
-<meta property="og:url" content="https://dbalife.info/2018/06/18/DBA误操作数据恢复方式/index.html">
+<meta property="og:title" content="InnoDB事务隔离级别的实现">
+<meta property="og:url" content="https://dbalife.info/2018/11/18/InnoDB事务隔离级别的实现/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="DBA直接面对生产一线数据，且拥有最高权限，DBA误操作往往是致命，因此操作生产环境，DBA往往非常谨慎！尽管如此，但误操作还是难以完全避免。常见的误操作有：delete/update table 忘了where条件，删错表了，删错库了等。一旦发生误操作，恢复数据该如何恢复？  要是发生了误操作可千">
+<meta property="og:description" content="SQL标准中定义了四种隔离级别：未提交读（read uncommitted），提交读（read committed），重复读（repeatable read），串行读（serializable），任何一款数据库都应遵照SQL标准实现这些隔离级别（虽然有一些例外，因为数据厂商都有一些私有的标准。如Or">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-18T01:14:22.993Z">
+<meta property="og:updated_time" content="2018-11-18T12:28:55.155Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="DBA误操作数据恢复方式">
-<meta name="twitter:description" content="DBA直接面对生产一线数据，且拥有最高权限，DBA误操作往往是致命，因此操作生产环境，DBA往往非常谨慎！尽管如此，但误操作还是难以完全避免。常见的误操作有：delete/update table 忘了where条件，删错表了，删错库了等。一旦发生误操作，恢复数据该如何恢复？  要是发生了误操作可千">
+<meta name="twitter:title" content="InnoDB事务隔离级别的实现">
+<meta name="twitter:description" content="SQL标准中定义了四种隔离级别：未提交读（read uncommitted），提交读（read committed），重复读（repeatable read），串行读（serializable），任何一款数据库都应遵照SQL标准实现这些隔离级别（虽然有一些例外，因为数据厂商都有一些私有的标准。如Or">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +93,7 @@
 
 
 
-    <title> DBA误操作数据恢复方式 - DBA Life </title>
+    <title> InnoDB事务隔离级别的实现 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +170,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          DBA误操作数据恢复方式
+          InnoDB事务隔离级别的实现
         
       </h1>
 
       <time class="post-time">
-          Jun 18 2018
+          Nov 18 2018
       </time>
     </header>
 
@@ -183,29 +183,17 @@
 
     
             <div class="post-content">
-            <p>DBA直接面对生产一线数据，且拥有最高权限，DBA误操作往往是致命，因此操作生产环境，DBA往往非常谨慎！尽管如此，但误操作还是难以完全避免。常见的误操作有：delete/update table 忘了where条件，删错表了，删错库了等。一旦发生误操作，恢复数据该如何恢复？</p>
-<p>要是发生了误操作可千万别慌张！这里有三种方法可帮你安全恢复：</p>
-<ol>
-<li>通过第三方binglog闪回工具，可以将删除的数据重新插入，前提是你要使用row format binlog 格式，并且误操作是DML语句. 这类工具有许多，大家可以去github上找，我也写过一个（<a href="https://github.com/Mount565/binlogDumper" target="_blank" rel="noopener">点击这里</a>）。选择哪一个不重要，重要的是你平时要做过测试，对其胸有成竹，这样才能临阵不慌！</li>
-<li><p>通过备份还原，然后通过binlog增量追加，追加时，通过–exclude-gtids 参数指定跳过误操作语句。前提是你要有备份，且有binlog实时备份。另外操作前你还要找到误操作的gtid. 这个要很熟悉，可通过show binlog events in ‘bin.0000.log’,如果事务很多不方便查看，也可去解析binlog文件来找到误操作的gtid.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">     mysql&gt; show binlog events in &apos;Mounts-Mac-bin.000007&apos;;</span><br><span class="line">+-----------------------+-----+----------------+-----------+-------------+--------------------------------------------------------------------+</span><br><span class="line">| Log_name              | Pos | Event_type     | Server_id | End_log_pos | Info                                                               |</span><br><span class="line">+-----------------------+-----+----------------+-----------+-------------+--------------------------------------------------------------------+</span><br><span class="line">| Mounts-Mac-bin.000007 |   4 | Format_desc    |        11 |         123 | Server ver: 5.7.21-debug-log, Binlog ver: 4                        |</span><br><span class="line">| Mounts-Mac-bin.000007 | 123 | Previous_gtids |        11 |         194 | 58ef0086-3e40-11e8-9067-dece6fc17919:1-11                          |</span><br><span class="line">| Mounts-Mac-bin.000007 | 194 | Gtid           |        11 |         259 | SET @@SESSION.GTID_NEXT= &apos;58ef0086-3e40-11e8-9067-dece6fc17919:12&apos; |</span><br><span class="line">| Mounts-Mac-bin.000007 | 259 | Query          |        11 |         331 | BEGIN                                                              |</span><br><span class="line">| Mounts-Mac-bin.000007 | 331 | Table_map      |        11 |         376 | table_id: 108 (test.t)                                             |</span><br><span class="line">| Mounts-Mac-bin.000007 | 376 | Update_rows    |        11 |         502 | table_id: 108 flags: STMT_END_F                                    |</span><br><span class="line">| Mounts-Mac-bin.000007 | 502 | Xid            |        11 |         533 | COMMIT /* xid=23 */                                                |</span><br><span class="line">+-----------------------+-----+----------------+-----------+-------------+--------------------------------------------------------------------+</span><br><span class="line">7 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-<p>然后跳过gtid执行binlog</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlbinlog --exclude-gtids=&apos;58ef0086-3e40-11e8-9067-dece6fc17919:12&apos; Mounts-Mac-bin.000007 | mysql</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>通过延迟复制从节点来恢复，如果你的架构有一节点是延迟复制从库，现在派上用场了。</p>
+            <p>SQL标准中定义了四种隔离级别：未提交读（read uncommitted），提交读（read committed），重复读（repeatable read），串行读（serializable），任何一款数据库都应遵照SQL标准实现这些隔离级别（虽然有一些例外，因为数据厂商都有一些私有的标准。如Oracle数据库支持READ COMMITTED 和 SERIALIZABLE这两种事务隔离级别）。但无论哪种数据库，实现这些隔离级别都采用了一种方法：加锁！加锁的目的是避免数据在并发环境下修改错乱，换句话说就是要求多线程轮流操作共享数据资源。<br>InnoDB 内部也是通过一系列的锁来实现数据操作的隔离的。对数据的操作无外乎有两种：读和写。结合多种场景，这两种操作在不同的隔离级别下会有不同的行为表现。这四种隔离级别就是对众多不同行为表现的归类，下面对它们一一分析。</p>
 <ul>
-<li>首先还是要找到误操作的GTID</li>
-<li>然后停掉slave（stop slave）</li>
-<li>将binlog应用到误操作到GTID前面（start slave until sql_before_gtid=’58ef0086-3e40-11e8-9067-dece6fc17919:12’）</li>
-<li><p>停止slave , 注入空事务,把误操作这个gtid变成空事务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">set gtid_next=&apos;58ef0086-3e40-11e8-9067-dece6fc17919:12&apos;</span><br><span class="line">begin;</span><br><span class="line">commit;</span><br><span class="line">set gtid_next=&quot;AUTOMATIC&quot;;</span><br><span class="line">start slave;</span><br></pre></td></tr></table></figure>
+<li>Repeatable Read<br>这是MySQL默认的隔离级别。<strong>非加锁读</strong>使用快照来实现，即同一个事务内，同一条查询，多次执行，其查询结果是一样的，都是第一次执行时的结果。而<strong>加锁读</strong>（<em>什么是加锁读？如select for update or locak in share mode, update,delete这些都是加锁读！</em>）则比较复杂。如果读语句使用unique key，则InnoDB只使用record lock, 不使用Gap lock, 因为唯一索引保障了数据不会重复，同一条数据的gap不会再插入新的数据；对于其它查询则InnoDB要使用Next-key lock(record lock + gap lock)。这会导致更新一行锁住两行的现象 。<br>另外，由于innodb的锁是加在索引上，如果查询/更新没有使用索引则会锁全表。因为没有使用索引字段查询/更新，InnoDB只好使用主键索引，若没有主键，则会使用隐式创建的主键，但不管哪个主键，InnoDB都无法确定更新条目的Gap,既然这样只好锁全表了。</li>
+<li><p>Read Committed<br>这是大多数数据库采用的默认隔离级别，它满足了大多数应用需求。该隔离级别下，事务内的查询读取各自的最新快照，同一事务内先后执行两条同样的查询，可能会有不同的结果（幻读现象）。对于加锁读，InnoDB仅对index record加锁，也就是仅使用行级锁，而不会锁行前面的Gap,这使得更新的同时允许插入相同的索引条目。但涉及到外键约束和重复键检查时，Gap lock也会用到。<br>在复制架构中必须使用row-based binlog logging来保障主从数据的一致，为什么？</p>
+<p>对于update和delete操作，innodb会根据where条件筛选要更新的数据，如果某条数据不符合where条件，则会立即释放掉该行的锁，而且如果查询没有使用索引，innoDB同样需要将锁加在主键上，但不会锁全表，因为它不涉及Gap。这使得并发增强，而且降低来死锁的概率。</p>
+<p>对于update操作，InnoDB可以使用<strong>半一致读</strong>，来优化查询，提高并发。即，如果要更新的某行处于锁定状态，InnoDB也将其返回给MySQL 来决定此行是不是符合where条件。如果符合条件，则必须更新此行，MySQL会再次查询看是否还处于锁定状态，如果是则等待，如果不是则就加锁然后更新；但如果此行不符合where条件则直接忽略。这也提高了并发的性能！</p>
 </li>
-<li><p>如此数据恢复完成，然后提升从节点为master, 原来的master 重建。</p>
-</li>
+<li>Read Uncommitted<br>这种隔离级别使用场景较少，它允许读到未递交事务（脏读），除此之外，它的表现行为与read committed相似。</li>
+<li>Serializable<br>这个与Repeatable Read相似，但当autocommit被关闭时，InnoDB自动将select 语句转换为select .. lock in share mode,这会使得查询时无法更新。如果autocommit开启，则一个查询就是一个事务，且执行完就commit了。</li>
 </ul>
-</li>
-</ol>
-<p>总之，DBA要有很强的心理素质，办法总会有的（出了事故就不要想绩效啦），这样才能做到临阵不慌，胸有成竹，一旦慌乱大脑就会短路，在很简单的问题面前往往也会不知所措。当然这些都需要平时在技术上多测试，多积累，多演练。 只有自身技术过硬心里才有底！</p>
+<p>上述是InnoDB的四种隔离级别实现。其中 read committed和repeatable read能够满足绝大多数业务，而read uncommitted和serializable似乎永远不会用到,重点理解前面两种就可以了。</p>
 
             </div>
           
@@ -214,8 +202,6 @@
       <footer class="post-footer">
 		
 		<div class="post-tags">
-		  
-			<a href="/tags/OPS/">OPS</a>
 		  
 			<a href="/tags/MySQL/">MySQL</a>
 		  
@@ -226,15 +212,9 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/06/19/MyCAT高可用的思考/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">MyCAT高可用的思考</span>
-        <span class="prev-text nav-mobile">Prev</span>
-      </a>
     
-    
-      <a class="next" href="/2018/06/17/What-I-have-lived-for/">
-        <span class="next-text nav-default">What I have lived for</span>
+      <a class="next" href="/2018/11/17/MySQL-filesort-算法探秘/">
+        <span class="next-text nav-default">MySQL filesort 算法探秘</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -250,7 +230,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'DBA误操作数据恢复方式', // 可选。默认为 location.href
+  id: 'InnoDB事务隔离级别的实现', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {
