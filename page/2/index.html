@@ -168,6 +168,87 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="cust-link" href="/2018/10/09/ProxySQL-Cluster-初探/">ProxySQL Cluster 初探</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Oct 09 2018
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              PrxoySQL从版本1.4起内置了集群模块，同一集群的配置会相互同步，这对大规模Proxy实例的管理带来了极大的方便。虽然目前相关特性还不是很完善，但这一令人期待的新功能让人禁不住先睹为快。
+
+ProxyCluster,主要有两大模块组成：
+
+ 1. 监控
+ 2. 重新配置
+
+目前监控和重配涉及4
+          <div class="read-more">
+            <a href="/2018/10/09/ProxySQL-Cluster-初探/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="cust-link" href="/2018/10/07/ProxySQL变量配置解说/">ProxySQL变量配置解说</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Oct 07 2018
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              ProxySQL中有一系列变量来供用户调优配置或功能配置。这些变量存放在表global_varialbes中。其中大部分变量可以在线修改，即时生效（执行LOAD MYSQL VARIABLES TO RUNTIME or LOAD ADMIN VARIABLES TO RUNTIME），但变量：ad
+          <div class="read-more">
+            <a href="/2018/10/07/ProxySQL变量配置解说/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="cust-link" href="/2018/08/28/MySQL5-6-Slave复制报1837导致事务不一致/">MySQL5.6 Slave复制报1837导致事务不一致</a>
         
       </h1>
@@ -534,100 +615,6 @@ MySQL5
   </article>
 
         
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/07/01/探索发现：InnoDB-内部IO活动监控/">探索发现：InnoDB 内部IO活动监控</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jul 01 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              在innodb提供的状态变量中，有几个反应内部IO情况的状态变量，对诊断瓶颈非常重要。这几个变量都不是计数器，而是瞬时值，反应当前的瞬时状态。官方文件解释非常少，这里详细解释一下。
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-
-
-mysql> show global status like 'I
-          <div class="read-more">
-            <a href="/2018/07/01/探索发现：InnoDB-内部IO活动监控/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/06/28/MySQL运维中长事务和锁等待排查/">MySQL运维中长事务和锁等待排查</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 28 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              作为一个DBA, 常常实际工作中遇到各种稀奇八怪的问题。这里重点说一说长事务和锁等待。
-
- * 长事务
-   简单来说就是长时间未递交的事务。它又可分为读长事务和写常事务。
-   
-    * 读长事务
-      比如研发同事连接查询机（从库）查询，没有启用autocommit, 执行了一个查询S
-          <div class="read-more">
-            <a href="/2018/06/28/MySQL运维中长事务和锁等待排查/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
         
   <nav class="pagination">
     
@@ -665,14 +652,14 @@ mysql> show global status like 'I
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">25</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">7</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">25</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">9</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
