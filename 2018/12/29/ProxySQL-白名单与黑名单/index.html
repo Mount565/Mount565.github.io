@@ -12,12 +12,12 @@
 
 
 
-  <meta name="description" content="What I have lived for"/>
+  <meta name="description" content="ProxySQL 白名单与黑名单"/>
 
 
 
 
-  <meta name="keywords" content="EL," />
+  <meta name="keywords" content="ProxySQL," />
 
 
 
@@ -32,21 +32,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/06/17/What-I-have-lived-for/"/>
+<link rel="canonical" href="https://dbalife.info/2018/12/29/ProxySQL-白名单与黑名单/"/>
 
 
-<meta name="description" content="Bertrand Russell  Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbeara">
-<meta name="keywords" content="EL">
+<meta name="description" content="ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！  黑名单 对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rul">
+<meta name="keywords" content="ProxySQL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="What I have lived for">
-<meta property="og:url" content="https://dbalife.info/2018/06/17/What-I-have-lived-for/index.html">
+<meta property="og:title" content="ProxySQL 白名单与黑名单">
+<meta property="og:url" content="https://dbalife.info/2018/12/29/ProxySQL-白名单与黑名单/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="Bertrand Russell  Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbeara">
+<meta property="og:description" content="ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！  黑名单 对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rul">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-17T03:12:50.385Z">
+<meta property="og:updated_time" content="2018-12-29T12:28:02.143Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="What I have lived for">
-<meta name="twitter:description" content="Bertrand Russell  Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbeara">
+<meta name="twitter:title" content="ProxySQL 白名单与黑名单">
+<meta name="twitter:description" content="ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！  黑名单 对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rul">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +93,7 @@
 
 
 
-    <title> What I have lived for - DBA Life </title>
+    <title> ProxySQL 白名单与黑名单 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +170,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          What I have lived for
+          ProxySQL 白名单与黑名单
         
       </h1>
 
       <time class="post-time">
-          Jun 17 2018
+          Dec 29 2018
       </time>
     </header>
 
@@ -183,16 +183,23 @@
 
     
             <div class="post-content">
-            <p><em>Bertrand Russell</em></p>
-<p>Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbearable pity for the suffering of mankind. These passions, like great winds, have blown me hither and thither, in a wayward course, over a great ocean of anguish, reaching to the very verge of despair.</p>
-<p>I have sought love, first, because it brings ecstasy – ecstasy so great that I would often have sacrificed all the rest of life for a few hours of this joy. I have sought it, next, because it relieves loneliness–that terrible loneliness in which one shivering consciousness looks over the rim of the world into the cold unfathomable lifeless abyss. I have sought it finally, because in the union of love I have seen, in a mystic miniature, the prefiguring vision of the heaven that saints and poets have imagined. This is what I sought, and though it might seem too good for human life, this is what–at last–I have found.<br>With equal passion I have sought knowledge. I have wished to understand the hearts of men. I have wished to know why the stars shine. And I have tried to apprehend the Pythagorean power by which number holds sway above the flux. A little of this, but not much, I have achieved.</p>
-<p>Love and knowledge, so far as they were possible, led upward toward the heavens. But always pity brought me back to earth. Echoes of cries of pain reverberate in my heart. Children in famine, victims tortured by oppressors, helpless old people a burden to their sons, and the whole world of loneliness, poverty, and pain make a mockery of what human life should be. I long to alleviate this evil, but I cannot, and I too suffer.</p>
-<p>This has been my life. I have found it worth living, and would gladly live it again if the chance were offered me.</p>
-<h4 id="经典译文"><a href="#经典译文" class="headerlink" title="经典译文"></a>经典译文</h4><p>对爱情的渴望，对知识的追求，对人类苦难不可遏制的同情，是支配我一生的单纯而强烈的三种感情。这些感情如阵阵飓风，吹拂在我动荡不定的生涯中，有时甚至吹过深沉痛苦的海洋，直抵绝望的边缘。</p>
-<p>我所以追求爱情有三方面的原因。首先，爱情有时给我带来狂喜，这种狂喜竟如此有力，以致使我常常会为了体验几小时的爱的喜悦，而宁愿牺牲生命中其他的一切。其次，爱情可以摆脱孤寂——身历那种可怕孤寂的人的战栗意识有时会由世界的边缘，观察到冷酷无生命的无底深渊。最后，在爱的结合中，我看到了古今圣贤以及诗人们所梦想的天堂的缩影，这正是我所追寻的人生境界。虽然它对一般的人类生活也许太美好，但这正是我透过爱情所得到的最终发现。</p>
-<p>我曾以同样的感情追求知识，我渴望去了解人类的心灵，也渴望知道星星为什么会发光，同时我还想理解毕达哥拉斯的力量。</p>
-<p>爱情与知识的可及领域，总是引领我到天堂的境界，可对人类苦难的同情却经常把我带回现实世界。那些痛苦的呼唤经常在我内心深处激起回响，饥饿中的孩子，被压迫被折磨着，给子女造成重担的孤苦无依的老人，以及全球无情的孤独、贫穷和痛苦的存在，是对人类生活理想的无视和讽刺。我常常希望能尽自己的微薄之力去减轻这不必要的痛苦，但我发现我完全失败了，因此我自己也感到很痛苦。</p>
-<p>这就是我的一生，我发现人是值得活的。如果有谁再给我一次生活的机会，我将欣然接受这难得的赐予。</p>
+            <p>ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！</p>
+<h4 id="黑名单"><a href="#黑名单" class="headerlink" title="黑名单"></a>黑名单</h4><p>对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rules里面插入一条记录。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules (rule_id,active,client_addr,error_msg,apply)values(3,1,&apos;192.168.216.146&apos;,&apos;this ip is banned!&apos;,1);</span><br><span class="line">load mysql query rules to run;</span><br></pre></td></tr></table></figure></p>
+<p>这样IP<code>192.168.216.146</code> 依然可以连接，但不能做任何的查询！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from sbtest1 limit 2;</span><br><span class="line">ERROR 1148 (42000): this ip is banned!</span><br></pre></td></tr></table></figure></p>
+<h4 id="白名单"><a href="#白名单" class="headerlink" title="白名单"></a>白名单</h4><p>对白名单的支持就有些复杂了。因为白名单有许多，应用端往往同一个服务会部署多个副本，我们数据库端为每个服务创建一个账号，在指定规则的时候，需要绑定<code>mysql_query_rules.username</code>和<code>mysql_query_rules.client_addr</code>， 这样只有<code>username</code>,<code>client_addr</code>以及我们的路由规则都匹配的时候才算匹配。这会导致同一条规则会有多条记录因为<code>client_addr</code>不同。 若在<code>mysql_query_rules</code>中匹配不到任何规则，则会走该用户所定义的<code>default_hostgroup</code>。这达不到黑名单的目的。因此我们需要定义一个<code>rule_id</code>很大的规则，批量任何的SQL，然后设定一个error_msg予以禁止。这样才能达到目的。<br>这会给规则表的维护带来困难！</p>
+<p>另一种比较好的办法是使用规则链(<code>chained rules</code>),这可以使得<code>mysql_query_rules</code>表不那么乱。下面详细说下这种方式。</p>
+<ol>
+<li>插入一条规则匹配所有的SQL，指定白名单IP（白名单过滤规则）<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules (rule_id,active,client_addr,match_digest,flagOUT,apply)values(5,1,&apos;192.168.216.146&apos;,&apos;.&apos;,10,0);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>注意，这条规则的rule_id应该是比较小的值，确保所有SQL匹配都用到；这条规则指定了flagOUT=10,apply=0,在得到匹配后，并不应用，而是继续匹配下一条规则（flagIN=10的规则）。</p>
+<ol start="2">
+<li>将其它所有可用的SQL匹配规则的flagIN设为10，以承接白名单过滤的路由规则。</li>
+<li>插入一条禁止所有SQL的规则<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules (rule_id,active,match_digest,error_msg,apply)values(100000,1,&apos;.&apos;,&apos;Access banned, maybe your IP is not allowed to do this&apos;,1&apos;);</span><br><span class="line"></span><br><span class="line">mysql&gt; select rule_id, active, flagIN,flagOUT,client_addr,match_digest,error_msg,apply from runtime_mysql_query_rules;</span><br><span class="line">+---------+--------+--------+---------+-----------------+----------------------+--------------------------------------------------------+-------+</span><br><span class="line">| rule_id | active | flagIN | flagOUT | client_addr     | match_digest         | error_msg                                              | apply |</span><br><span class="line">+---------+--------+--------+---------+-----------------+----------------------+--------------------------------------------------------+-------+</span><br><span class="line">| 10      | 1      | 0      | 10      | 192.168.216.146 | .                    | NULL                                                   | 0     |</span><br><span class="line">| 20      | 1      | 10     | NULL    | NULL            | ^SELECT.*FOR UPDATE$ | NULL                                                   | 1     |</span><br><span class="line">| 30      | 1      | 10     | NULL    | NULL            | ^SELECT              | NULL                                                   | 1     |</span><br><span class="line">| 100000  | 1      | 0      | NULL    | NULL            | .                    | Access banned, maybe your IP is not allowed to do this | 1     |</span><br><span class="line">+---------+--------+--------+---------+-----------------+----------------------+--------------------------------------------------------+-------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>即，如果在规则表中没有匹配到任何规则，则禁止走该用户默认的hostgroup。注意，这条规则的rule_id应该最大，之后不应该再有其它规则！</p>
+<p>这种方式的特点是，规则表不太乱，有几个白名单，就插入几条白名单过滤规则就行了，实用性较强！但它也带来了一定的维护的难度，如在白名单上使用了链式路由规则，如果再有其它的需求需要使用链式路由规则呢？整个规则链就要统一调整，而且这种需求很难提前规划。</p>
 
             </div>
           
@@ -202,7 +209,7 @@
 		
 		<div class="post-tags">
 		  
-			<a href="/tags/EL/">EL</a>
+			<a href="/tags/ProxySQL/">ProxySQL</a>
 		  
 		</div>
 		
@@ -211,15 +218,9 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/06/18/DBA误操作数据恢复方式/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">DBA误操作数据恢复方式</span>
-        <span class="prev-text nav-mobile">Prev</span>
-      </a>
     
-    
-      <a class="next" href="/2018/06/17/众多大师谈英语学习的方法/">
-        <span class="next-text nav-default">众多大师谈英语学习的方法</span>
+      <a class="next" href="/2018/12/29/ProxySQL的链式路由/">
+        <span class="next-text nav-default">ProxySQL的链式路由</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -235,7 +236,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'What I have lived for', // 可选。默认为 location.href
+  id: 'ProxySQL 白名单与黑名单', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {

@@ -12,12 +12,12 @@
 
 
 
-  <meta name="description" content="What I have lived for"/>
+  <meta name="description" content="ProxySQL的链式路由"/>
 
 
 
 
-  <meta name="keywords" content="EL," />
+  <meta name="keywords" content="ProxySQL," />
 
 
 
@@ -32,21 +32,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/06/17/What-I-have-lived-for/"/>
+<link rel="canonical" href="https://dbalife.info/2018/12/29/ProxySQL的链式路由/"/>
 
 
-<meta name="description" content="Bertrand Russell  Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbeara">
-<meta name="keywords" content="EL">
+<meta name="description" content="ProxySQL 支持链式路由规则，具体来说是，匹配完一条规则后，再接着匹配指定的其它规则。链式路由指定方式是通过mysql_query_rules表中的两个字段来实现的：flagOUT, flagIN，官方的解释很绕，看了几遍，模模糊糊不能明了，也许是语言方面的障碍吧：  lagIN, flagO">
+<meta name="keywords" content="ProxySQL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="What I have lived for">
-<meta property="og:url" content="https://dbalife.info/2018/06/17/What-I-have-lived-for/index.html">
+<meta property="og:title" content="ProxySQL的链式路由">
+<meta property="og:url" content="https://dbalife.info/2018/12/29/ProxySQL的链式路由/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="Bertrand Russell  Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbeara">
+<meta property="og:description" content="ProxySQL 支持链式路由规则，具体来说是，匹配完一条规则后，再接着匹配指定的其它规则。链式路由指定方式是通过mysql_query_rules表中的两个字段来实现的：flagOUT, flagIN，官方的解释很绕，看了几遍，模模糊糊不能明了，也许是语言方面的障碍吧：  lagIN, flagO">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-06-17T03:12:50.385Z">
+<meta property="og:updated_time" content="2018-12-29T12:26:55.540Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="What I have lived for">
-<meta name="twitter:description" content="Bertrand Russell  Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbeara">
+<meta name="twitter:title" content="ProxySQL的链式路由">
+<meta name="twitter:description" content="ProxySQL 支持链式路由规则，具体来说是，匹配完一条规则后，再接着匹配指定的其它规则。链式路由指定方式是通过mysql_query_rules表中的两个字段来实现的：flagOUT, flagIN，官方的解释很绕，看了几遍，模模糊糊不能明了，也许是语言方面的障碍吧：  lagIN, flagO">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +93,7 @@
 
 
 
-    <title> What I have lived for - DBA Life </title>
+    <title> ProxySQL的链式路由 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +170,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          What I have lived for
+          ProxySQL的链式路由
         
       </h1>
 
       <time class="post-time">
-          Jun 17 2018
+          Dec 29 2018
       </time>
     </header>
 
@@ -183,16 +183,23 @@
 
     
             <div class="post-content">
-            <p><em>Bertrand Russell</em></p>
-<p>Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbearable pity for the suffering of mankind. These passions, like great winds, have blown me hither and thither, in a wayward course, over a great ocean of anguish, reaching to the very verge of despair.</p>
-<p>I have sought love, first, because it brings ecstasy – ecstasy so great that I would often have sacrificed all the rest of life for a few hours of this joy. I have sought it, next, because it relieves loneliness–that terrible loneliness in which one shivering consciousness looks over the rim of the world into the cold unfathomable lifeless abyss. I have sought it finally, because in the union of love I have seen, in a mystic miniature, the prefiguring vision of the heaven that saints and poets have imagined. This is what I sought, and though it might seem too good for human life, this is what–at last–I have found.<br>With equal passion I have sought knowledge. I have wished to understand the hearts of men. I have wished to know why the stars shine. And I have tried to apprehend the Pythagorean power by which number holds sway above the flux. A little of this, but not much, I have achieved.</p>
-<p>Love and knowledge, so far as they were possible, led upward toward the heavens. But always pity brought me back to earth. Echoes of cries of pain reverberate in my heart. Children in famine, victims tortured by oppressors, helpless old people a burden to their sons, and the whole world of loneliness, poverty, and pain make a mockery of what human life should be. I long to alleviate this evil, but I cannot, and I too suffer.</p>
-<p>This has been my life. I have found it worth living, and would gladly live it again if the chance were offered me.</p>
-<h4 id="经典译文"><a href="#经典译文" class="headerlink" title="经典译文"></a>经典译文</h4><p>对爱情的渴望，对知识的追求，对人类苦难不可遏制的同情，是支配我一生的单纯而强烈的三种感情。这些感情如阵阵飓风，吹拂在我动荡不定的生涯中，有时甚至吹过深沉痛苦的海洋，直抵绝望的边缘。</p>
-<p>我所以追求爱情有三方面的原因。首先，爱情有时给我带来狂喜，这种狂喜竟如此有力，以致使我常常会为了体验几小时的爱的喜悦，而宁愿牺牲生命中其他的一切。其次，爱情可以摆脱孤寂——身历那种可怕孤寂的人的战栗意识有时会由世界的边缘，观察到冷酷无生命的无底深渊。最后，在爱的结合中，我看到了古今圣贤以及诗人们所梦想的天堂的缩影，这正是我所追寻的人生境界。虽然它对一般的人类生活也许太美好，但这正是我透过爱情所得到的最终发现。</p>
-<p>我曾以同样的感情追求知识，我渴望去了解人类的心灵，也渴望知道星星为什么会发光，同时我还想理解毕达哥拉斯的力量。</p>
-<p>爱情与知识的可及领域，总是引领我到天堂的境界，可对人类苦难的同情却经常把我带回现实世界。那些痛苦的呼唤经常在我内心深处激起回响，饥饿中的孩子，被压迫被折磨着，给子女造成重担的孤苦无依的老人，以及全球无情的孤独、贫穷和痛苦的存在，是对人类生活理想的无视和讽刺。我常常希望能尽自己的微薄之力去减轻这不必要的痛苦，但我发现我完全失败了，因此我自己也感到很痛苦。</p>
-<p>这就是我的一生，我发现人是值得活的。如果有谁再给我一次生活的机会，我将欣然接受这难得的赐予。</p>
+            <p>ProxySQL 支持链式路由规则，具体来说是，匹配完一条规则后，再接着匹配指定的其它规则。链式路由指定方式是通过mysql_query_rules表中的两个字段来实现的：flagOUT, flagIN，官方的解释很绕，看了几遍，模模糊糊不能明了，也许是语言方面的障碍吧：</p>
+<blockquote>
+<p>lagIN, flagOUT, apply - these allow us to create “chain of rules” that get applied one after the other. An input flag value is set to 0, and only rules with flagIN=0 are considered at the beginning. When a matching rule is found for a specific query, flagOUT is evaluated and if NOT NULL the query will be flagged with the specified flag in flagOUT. If flagOUT differs from flagIN , the query will exit the current chain and enters a new chain of rules having flagIN as the new input flag. If flagOUT matches flagIN, the query will be re-evaluate again against the first rule with said flagIN. This happens until there are no more matching rules, or apply is set to 1 (which means this is the last rule to be applied)</p>
+</blockquote>
+<p>经过一番测试，发现也不难理解，用通俗的汉语解释一下：</p>
+<p>flagIN 指定匹配入口，即一条规则得到匹配后，如果flagOUT不为NULL，且apply不等于1， 则根据flagOUT的值，在后续的规则中查找flagIN与之相等的规则进行匹配。</p>
+<ul>
+<li>如果一条规则flagIN=0（默认）,则任意请求都要匹配这条规则，它是一级路由规则；</li>
+<li>如果一条规则flagIN=xx, 则只有flagOUT=xx的规则得到成功匹配后，才会匹配这条规则，它属于次级路由规则。</li>
+</ul>
+<p>ProxySQL对某条SQL进行匹配时，是按照mysql_query_rule.rule_id,从小到大，依次取每条规则进行匹配，直到匹配成功，并且该规则的apply=1就不再匹配剩余的规则了！</p>
+<p>要想理解这一特性还是要通过测试,简单举个列子。下面插入了一条规则，用于屏蔽select, 但不想屏蔽所有的select, 因此指定flagIN=100。（proxysql 中可以通过指定路由规则的error_msg来屏蔽某条SQL）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules(rule_id,match_digest,flagIN,error_msg,apply)values(19,&apos;^select&apos;,100,&apos;You can not select this&apos;,1);</span><br></pre></td></tr></table></figure></p>
+<p>接下来我们再插入一条规则，指定其flagOUT=100<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules(rule_id,match_pattern,flagOUT,apply)values(18,&apos;select \* from sbtest1 limit 5$&apos;,100,0);</span><br></pre></td></tr></table></figure></p>
+<p>这条规则匹配到SQL ：select <em> from sbtest1 limit 5， 就会进入匹配flagIN=100的规则，也就是上面我们定义的那一条，那一条规则会屏蔽执行这一SQL。这条规则执行完并不应用（apply=0）,这很关键。如果apply=1就不再找其余的规则了，而是立马就应用，然后退出匹配链。这两条规则结合起来就是屏蔽SQL select </em> from sbtest1 limit 5。 当然如果你想屏蔽其它select SQL，还可以继续插入规则，指定flagOUT=100。</p>
+<p>ProxySQL的大部分功能都是通过mysql_query_rules表来实现，这个表现在已经有许多字段了，而且有些字段在官方文档中并没有解释。如果你仔细看，你会发现还有一个<code>next_query_flagIN</code>字段,这是个什么鬼？</p>
+<p>搜索了下issue，发现它是专门为特定场景实现的。比如你想再某条规定的规则得到匹配后，该session所发送的下一条SQL指定规则匹配。这使得解释起来很绕，我觉得这种场景应该很少，在pull<a href="https://github.com/sysown/proxysql/pull/825" target="_blank" rel="noopener">825</a>中作者的解释也很费劲。对于klinometr 所提的问题，使用mysql_users.transaction_persistent可以实现啊？<br>有兴趣可以详细研读一下！</p>
+<p>参考：<br><a href="https://github.com/sysown/proxysql/pull/825" target="_blank" rel="noopener">https://github.com/sysown/proxysql/pull/825</a></p>
 
             </div>
           
@@ -202,7 +209,7 @@
 		
 		<div class="post-tags">
 		  
-			<a href="/tags/EL/">EL</a>
+			<a href="/tags/ProxySQL/">ProxySQL</a>
 		  
 		</div>
 		
@@ -211,15 +218,15 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/06/18/DBA误操作数据恢复方式/">
+      <a class="prev" href="/2018/12/29/ProxySQL-白名单与黑名单/">
         <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">DBA误操作数据恢复方式</span>
+        <span class="prev-text nav-default">ProxySQL 白名单与黑名单</span>
         <span class="prev-text nav-mobile">Prev</span>
       </a>
     
     
-      <a class="next" href="/2018/06/17/众多大师谈英语学习的方法/">
-        <span class="next-text nav-default">众多大师谈英语学习的方法</span>
+      <a class="next" href="/2018/12/09/ProxySQL源码分析之Admin-historical-statistics/">
+        <span class="next-text nav-default">ProxySQL源码分析之Admin historical statistics</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -235,7 +242,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'What I have lived for', // 可选。默认为 location.href
+  id: 'ProxySQL的链式路由', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {

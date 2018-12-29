@@ -168,6 +168,85 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="cust-link" href="/2018/12/29/ProxySQL-白名单与黑名单/">ProxySQL 白名单与黑名单</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Dec 29 2018
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！
+
+黑名单
+对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rul
+          <div class="read-more">
+            <a href="/2018/12/29/ProxySQL-白名单与黑名单/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="cust-link" href="/2018/12/29/ProxySQL的链式路由/">ProxySQL的链式路由</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Dec 29 2018
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              ProxySQL 支持链式路由规则，具体来说是，匹配完一条规则后，再接着匹配指定的其它规则。链式路由指定方式是通过mysql_query_rules表中的两个字段来实现的：flagOUT, flagIN，官方的解释很绕，看了几遍，模模糊糊不能明了，也许是语言方面的障碍吧：
+
+lagIN, flagO
+          <div class="read-more">
+            <a href="/2018/12/29/ProxySQL的链式路由/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="cust-link" href="/2018/12/09/ProxySQL源码分析之Admin-historical-statistics/">ProxySQL源码分析之Admin historical statistics</a>
         
       </h1>
@@ -495,85 +574,6 @@ mysql 数据库有700多G, buffer pool 80G , 云磁盘IO性能不佳，经过分
   </article>
 
         
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/10/25/ProxySQL-之Multiplexing/">ProxySQL 之Multiplexing</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Oct 25 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。
-
-我觉得有两个关键点不易理解：
-
- * mysql_users.transaction_persistent
-   单独理解这个
-          <div class="read-more">
-            <a href="/2018/10/25/ProxySQL-之Multiplexing/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/">ProxySQL-Writing Query routed to Readers hostgroup</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Oct 25 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              I tried to report this as a bug to the authorissue1755. and he admits that with global autocommit=0 in backend server,you will have a lot of troubles.
-          <div class="read-more">
-            <a href="/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
         
   <nav class="pagination">
     
@@ -606,14 +606,14 @@ mysql 数据库有700多G, buffer pool 80G , 云磁盘IO性能不佳，经过分
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">25</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">10</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">25</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">12</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
