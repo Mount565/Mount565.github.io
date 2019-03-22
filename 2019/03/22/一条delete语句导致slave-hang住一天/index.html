@@ -12,12 +12,12 @@
 
 
 
-  <meta name="description" content="ProxySQL 之Multiplexing"/>
+  <meta name="description" content="一条delete语句导致slave hang住一天"/>
 
 
 
 
-  <meta name="keywords" content="ProxySQL," />
+  <meta name="keywords" content="MySQL," />
 
 
 
@@ -32,21 +32,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/"/>
+<link rel="canonical" href="https://dbalife.info/2019/03/22/一条delete语句导致slave-hang住一天/"/>
 
 
-<meta name="description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
-<meta name="keywords" content="ProxySQL">
+<meta name="description" content="生产环境一条简单的delete语句，导致slave hang住，复制延迟不断增加！  这个问题很怪，整个系统CPU，内存，磁盘IO都没有超载，就是一个SQL线程运行，超级慢！ 查看事务状态复制SQL线程一直处于fetching rows.  1 2 3 4 5 6 7 8 9 10 11 12 13">
+<meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ProxySQL 之Multiplexing">
-<meta property="og:url" content="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/index.html">
+<meta property="og:title" content="一条delete语句导致slave hang住一天">
+<meta property="og:url" content="https://dbalife.info/2019/03/22/一条delete语句导致slave-hang住一天/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
+<meta property="og:description" content="生产环境一条简单的delete语句，导致slave hang住，复制延迟不断增加！  这个问题很怪，整个系统CPU，内存，磁盘IO都没有超载，就是一个SQL线程运行，超级慢！ 查看事务状态复制SQL线程一直处于fetching rows.  1 2 3 4 5 6 7 8 9 10 11 12 13">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-25T12:56:13.791Z">
+<meta property="og:updated_time" content="2019-03-22T12:18:12.770Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="ProxySQL 之Multiplexing">
-<meta name="twitter:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
+<meta name="twitter:title" content="一条delete语句导致slave hang住一天">
+<meta name="twitter:description" content="生产环境一条简单的delete语句，导致slave hang住，复制延迟不断增加！  这个问题很怪，整个系统CPU，内存，磁盘IO都没有超载，就是一个SQL线程运行，超级慢！ 查看事务状态复制SQL线程一直处于fetching rows.  1 2 3 4 5 6 7 8 9 10 11 12 13">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +93,7 @@
 
 
 
-    <title> ProxySQL 之Multiplexing - DBA Life </title>
+    <title> 一条delete语句导致slave hang住一天 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +170,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          ProxySQL 之Multiplexing
+          一条delete语句导致slave hang住一天
         
       </h1>
 
       <time class="post-time">
-          Oct 25 2018
+          Mar 22 2019
       </time>
     </header>
 
@@ -183,18 +183,25 @@
 
     
             <div class="post-content">
-            <p>关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见<a href="http://seanlook.com/2017/04/17/mysql-proxysql-multiplexing/" target="_blank" rel="noopener">这里</a> 或 <a href="https://www.awsinfradb.com/single-post/2017/03/06/Multiplexing-in-ProxySQL" target="_blank" rel="noopener">这里</a>. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。</p>
-<p>我觉得有两个关键点不易理解：</p>
-<ul>
-<li>mysql_users.transaction_persistent<br>单独理解这个参数，也很简单。设置为1后就是确保一个事务内所有的SQL都发送到同一个连接。这时路由规则已经被禁用，直到事务commit.</li>
-<li>mysql_query_rules.multiplex<br>Multiplex 这个参数可以针对某条规则设置的，当然也可针对全局（SET mysql-multiplexing=’false’）。禁用multiplex后，后端连接会与前端绑定，但路由规则是起作用的。<br>怎么理解？？？<br>举例：<br>当执行了一条会禁用multiplex的语句，如select @v;.ProxySQL会根据路由规则，在指定的hostgroup（readers group）中的某台server上建立一个后端连接，这个连接会与前端连接绑定。然后SQL路由规则依然生效，但凡是路由到readers group的SQL都会使用同一个连接，将SQL发送到同一台后端server。而路由到writergroup的SQL是可以更换writer group的后台连接的。</li>
-</ul>
-<p>通过上面的描述，应该可以体会到这两个特性的不同。</p>
-<p>transaction_persistent 针对用户设置，而multiplexing则是针对规则设置。<br>transaction_persistent <strong>一旦开启事务，事务内的SQL不再走路由，都会发给同一个连接</strong>。而multiplexing的禁用同样会发生连接绑定,但路由规则还会起作用 ，只有路由到与绑定连接所在的后端server处于同一hostgroup时，才会使用所绑定的连接，而路由到其它的hostgroup时，连接是可以更换的。</p>
-<p>再举例： 有一个Writer Hostgroup (a),里面有一台server a. 一个Reader Hostgroup (b,c,d)里面有三台server: b、c、d. 客户端执行了一个SQL：select @v, 这会导致禁用multiplexing. 假如这个语句在server b上执行，那么后端ProxySQL与server b的连接就会与client 连接绑定。这个client以后任何路由到reader hostgroup的query都会使用这个连接发送到server b , 而不会再发送到server c,d. 但这个client路由到Writer hostgroup的query则是可以更换连接与访问server a的。这种连接绑定可以成为<strong>同一个hostgroup内连接绑定</strong>！</p>
-<p>由此可以看到，启用transaction_persistent 是连接事务内强绑定，SQL不再走路由规则，事务完成后解除绑定。而multiplex针对某些语句（包括active transaction）自动禁用，禁用后连接不再被复用，与client绑定，但路由规则还是起作用。如果客户端的SQL因为路由规则，被分发到其它hostgroup(不是所绑定的连接后端server所在的hostgroup),ProxySQL还是会分配其它hostgroup的连接个client来执行SQL。 这时来看，好像连接并没有绑定！其实它只是针对同一个hostgroup来说是绑定了的。</p>
-<p>对于某些命令（如select @v1），multipex被禁用后，后台连接在client连接退出时，会自动销毁。也许重置连接的相关变量比重新建立一个连接相比开销更大吧！</p>
-<p>说的挺啰嗦，希望能说明白！</p>
+            <p>生产环境一条简单的delete语句，导致slave hang住，复制延迟不断增加！</p>
+<p>这个问题很怪，整个系统CPU，内存，磁盘IO都没有超载，就是一个SQL线程运行，超级慢！<br>查看事务状态复制SQL线程一直处于fetching rows.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from information_schema.innodb_trx\G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">                    trx_id: 9284975407</span><br><span class="line">                 trx_state: RUNNING</span><br><span class="line">               trx_started: 2019-03-21 17:28:11</span><br><span class="line">     trx_requested_lock_id: NULL</span><br><span class="line">          trx_wait_started: NULL</span><br><span class="line">                trx_weight: 96586</span><br><span class="line">       trx_mysql_thread_id: 2</span><br><span class="line">                 trx_query: NULL</span><br><span class="line">       trx_operation_state: fetching rows</span><br><span class="line">         trx_tables_in_use: 1</span><br><span class="line">         trx_tables_locked: 3</span><br><span class="line">          trx_lock_structs: 95702</span><br><span class="line">     trx_lock_memory_bytes: 8528080</span><br><span class="line">           trx_rows_locked: 3773056</span><br><span class="line">         trx_rows_modified: 4615</span><br><span class="line">   trx_concurrency_tickets: 0</span><br><span class="line">       trx_isolation_level: READ COMMITTED</span><br><span class="line">         trx_unique_checks: 1</span><br><span class="line">    trx_foreign_key_checks: 1</span><br><span class="line">trx_last_foreign_key_error: NULL</span><br><span class="line"> trx_adaptive_hash_latched: 0</span><br><span class="line"> trx_adaptive_hash_timeout: 0</span><br><span class="line">          trx_is_read_only: 0</span><br><span class="line">trx_autocommit_non_locking: 0</span><br></pre></td></tr></table></figure>
+<p>查看Innodb 状态变量发现一个异常：<code>Innodb_rows_read</code>达170多亿，远超表中数量。这使我猛然醒悟，这个删除语句共删除4万多条数据，怎么会有那么多的Innodb_rows_read? 表中肯定缺少主键，导致每条数据的删除都要造全表找。查看表结构果然没有主键！</p>
+<blockquote>
+<p>Every replication event against a table without a primary or unique key whose value is accessible through the SQL interface has the potential to require a full table scan for each row replicated.</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show global status like &apos;INNODB_ROWS_DELETED&apos;;</span><br><span class="line">+---------------------+-------+</span><br><span class="line">| Variable_name       | Value |</span><br><span class="line">+---------------------+-------+</span><br><span class="line">| Innodb_rows_deleted | 4615  |</span><br><span class="line">+---------------------+-------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; show global status like &apos;INNODB_ROWS_READ&apos;;</span><br><span class="line">+------------------+-------------+</span><br><span class="line">| Variable_name    | Value       |</span><br><span class="line">+------------------+-------------+</span><br><span class="line">| Innodb_rows_read | 17395762976 |</span><br><span class="line">+------------------+-------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p>那么为什么这个语句在主库执行没有这么慢呢？  </p>
+<p>因为复制采用RBR模式，一条delete语句在主库执行后，可能会产生大量binlog event，这与delete语句的影响行数相关。这些binlog传到从库后，在从库上是按照binlog event个数逐一执行的，这就造成了主库执行一条delete语句，从库需要执行4万（针对本例）多条语句。由于没有主键，每一条语句都要全表扫描，导致从库非常慢！在主库上执行<code>show master status</code>看到的<code>gtid_executed</code>是不变的，而且slave的binlog也不写入，因为这是一个大事务，只有在执行完成后commit ，才会记入binlog. </p>
+<p><strong>解决办法</strong>：</p>
+<ol>
+<li>配置skip-slave-start，重启slave </li>
+<li>登陆slave，关掉binlog（set sql_log_bin=0）,给相关表添加主键</li>
+<li>start slave</li>
+<li>复制完成好后，drop 掉所添加的主键</li>
+<li>最后在主库上为没有主键的表添加主键，这样主从表结构严格一致</li>
+</ol>
+<p>参考：<a href="https://www.fromdual.com/node/1313" target="_blank" rel="noopener">https://www.fromdual.com/node/1313</a></p>
 
             </div>
           
@@ -204,7 +211,7 @@
 		
 		<div class="post-tags">
 		  
-			<a href="/tags/ProxySQL/">ProxySQL</a>
+			<a href="/tags/MySQL/">MySQL</a>
 		  
 		</div>
 		
@@ -213,15 +220,9 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/11/02/xtrabackup增量备份造成磁盘Read-IO飙升记/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">xtrabackup增量备份造成磁盘Read IO飙升记</span>
-        <span class="prev-text nav-mobile">Prev</span>
-      </a>
     
-    
-      <a class="next" href="/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/">
-        <span class="next-text nav-default">ProxySQL-Writing Query routed to Readers hostgroup</span>
+      <a class="next" href="/2019/03/04/ProxySQL源码之SQL执行时间的计算/">
+        <span class="next-text nav-default">ProxySQL源码之SQL执行时间的计算</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -237,7 +238,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'ProxySQL 之Multiplexing', // 可选。默认为 location.href
+  id: '一条delete语句导致slave hang住一天', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {
