@@ -168,6 +168,64 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="cust-link" href="/2018/07/27/宿主机重启导致slave异常分析记/">宿主机重启导致slave异常分析记</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Jul 27 2018
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              问题
+这是一台从库VM，为了解决从库延迟问题，将sync_binlog设置为0，innodb_flush_log_at_trx_commit设置为2. 宿主机重启后，导致slave 复制SQL线程中断。
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+
+          <div class="read-more">
+            <a href="/2018/07/27/宿主机重启导致slave异常分析记/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="cust-link" href="/2018/07/23/MySQL-Core-File-Dump-分析实战/">MySQL Core File Dump 分析实战</a>
         
       </h1>
@@ -546,44 +604,6 @@ The number o
   </article>
 
         
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/06/26/MySQL-5-7中MDL锁排查/">MySQL 5.7中MDL锁排查</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 26 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              问题：
-DB运维过程中经常遇到DDL操作挂起，查看其状态是waiting for waiting for table metadata lock. 而mysql的会话那么多，不知道那个会话的操作没有及时递影响了DDL。在mysql5.6，我们排查这类问题，往往需要从information_schem
-          <div class="read-more">
-            <a href="/2018/06/26/MySQL-5-7中MDL锁排查/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
         
   <nav class="pagination">
     
@@ -621,14 +641,14 @@ DB运维过程中经常遇到DDL操作挂起，查看其状态是waiting for wai
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">14</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">27</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">14</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 

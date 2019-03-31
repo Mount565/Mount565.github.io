@@ -12,10 +12,12 @@
 
 
 
-  <meta name="description" content="Share The Details of MySQL Database"/>
+  <meta name="description" content="MySQL中的MVCC协议"/>
 
 
 
+
+  <meta name="keywords" content="MySQL," />
 
 
 
@@ -30,20 +32,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/page/5/"/>
+<link rel="canonical" href="https://dbalife.info/2019/03/31/MySQL中的MVCC协议/"/>
 
 
-<meta name="description" content="Share The Details of MySQL Database">
-<meta name="keywords" content="IT,MySQL,Database,Programming,English Learning">
-<meta property="og:type" content="website">
-<meta property="og:title" content="DBA Life">
-<meta property="og:url" content="https://dbalife.info/page/5/index.html">
+<meta name="description" content="MVCC是一种并发控制协议，我们经常会听到协议两个字，比如Tcp协议，HTTP协议，raft协议等等。感觉协议高深莫测，只有那些高手怪才才能理解。其实我对协议的理解很简单，协议就是为完成某项作业而指定的一系列约定！比如古时候士兵放哨，遇见敌情通过点火放烟的方式来传递信息，这就是简单的协议。只不过互联">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL中的MVCC协议">
+<meta property="og:url" content="https://dbalife.info/2019/03/31/MySQL中的MVCC协议/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="Share The Details of MySQL Database">
+<meta property="og:description" content="MVCC是一种并发控制协议，我们经常会听到协议两个字，比如Tcp协议，HTTP协议，raft协议等等。感觉协议高深莫测，只有那些高手怪才才能理解。其实我对协议的理解很简单，协议就是为完成某项作业而指定的一系列约定！比如古时候士兵放哨，遇见敌情通过点火放烟的方式来传递信息，这就是简单的协议。只不过互联">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-03-31T10:57:34.340Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="DBA Life">
-<meta name="twitter:description" content="Share The Details of MySQL Database">
+<meta name="twitter:title" content="MySQL中的MVCC协议">
+<meta name="twitter:description" content="MVCC是一种并发控制协议，我们经常会听到协议两个字，比如Tcp协议，HTTP协议，raft协议等等。感觉协议高深莫测，只有那些高手怪才才能理解。其实我对协议的理解很简单，协议就是为完成某项作业而指定的一系列约定！比如古时候士兵放哨，遇见敌情通过点火放烟的方式来传递信息，这就是简单的协议。只不过互联">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -90,7 +93,7 @@
 
 
 
-    <title> DBA Life - Share The Details of MySQL Database</title>
+    <title> MySQL中的MVCC协议 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -163,245 +166,99 @@
         
     <div id="primary" class="home">
         
-            
   <article class="post">
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="cust-link" href="/2018/06/16/MySQL8默认字符集utf8mb4/">MySQL8默认字符集utf8mb4</a>
+          MySQL中的MVCC协议
         
       </h1>
 
       <time class="post-time">
-          Jun 16 2018
+          Mar 31 2019
       </time>
     </header>
 
 
 
     
-        <div class="post-excerpt">
-            
-            
-              
-            
+            <div class="post-content">
+            <p>MVCC是一种并发控制协议，我们经常会听到协议两个字，比如Tcp协议，HTTP协议，raft协议等等。感觉协议高深莫测，只有那些高手怪才才能理解。其实我对协议的理解很简单，协议就是为完成某项作业而指定的一系列约定！比如古时候士兵放哨，遇见敌情通过点火放烟的方式来传递信息，这就是简单的协议。只不过互联网那些协议搞得更加复杂更加严谨罢了。</p>
+<p>我们再来看看MVCC协议。MVCC的全称是Multi-Version Concurrecy Control，即多版本并发控制协议。它解决来我们什么问题呢？</p>
+<p>我们都知道SQL标准中定义了四种隔离级别 。MySQL数据库完整地实现了这四种隔离级别（并不是所有的数据库都这么听话），这其中MVCC 功不可没。当然MVCC并不是实现这些隔离级别的必要条件，但若没有MVCC，读写都需要隔离，数据库的性能会非常差，高并发更是无从谈起。因此MVCC使得读操作不再影响写操作，读写可以并发执行，同时又保障来事务的隔离级别。这使得MVCC是所有事务型数据库中必不可少的一部分。</p>
+<p>那么数据库又是这么实现的呢？</p>
+<p>在InnoDB引擎中，每一行都有三个隐藏的内部属性：</p>
+<ol>
+<li>DB_TRX_ID：占6个字节，记录操作改行数据的最近的一个事务ID，事务的ID只增不减，因此数据的版本也是由它来体现的。</li>
+<li>DB_ROLL_PTR：占7个字节，指向回滚段中的回滚记录。如果该事务还没有commit, 这个字段的值确保能够准确找到回滚记录。</li>
+<li>DELETE_BIT: 标记该记录是否被删除</li>
+</ol>
+<p>这三个字段是实现MVCC协议的关键！</p>
+<p>在MVCC协议下，数据库增删改查通过如下方式实现：</p>
+<ul>
+<li>INSERT<br>插入一条数据时，会将插入改行的事务ID（trx_id）保存保存到隐藏的属性中.</li>
+<li>SELECT<br>这个查询比较麻烦，一条数据对于改事务是否可见，InnoDB要从两方面进行判断：<ol>
+<li>是从事务版本号来判断，该事务只能读到比该事务更小版本号（trx_id）的数据.</li>
+<li>还要判断数据是否被删除。即数据行的删除位要么为定义，要么定义了，但版本号（trx_id）大于当前事务。也就是该数据被删除，但是被当前事务之后的事务删除的，当前事务还是可见的。<br>理解上述这两点很重要！</li>
+</ol>
+</li>
+<li>DELETE<br>删除操作比较简单，mark一下数据行的删除标记位，并更新该数据的版本号，数据并没有真正删除。真正删除是由purge线程定时操作的，当purge线程发现某条版本数据不再被当前任何事务所使用时，就把它purge掉了。</li>
+<li>UPDATE<br>更新操作是由INSERT和DELETE两个操作来完成的。即把旧的数据记录标记删除，并更新版本号为最新的trx_id。同时插入一条新的数据，新的数据是更新后的数据，并保存当前版本号。因此即使你更新一个字段，InnoDB内部也要插入整行的数据。</li>
+</ul>
+<p>由上述可以看的，我们所熟悉的增删改查，数据库底层的操作并不是那么简单。因为它即要兼顾事务的ACID，又不能丧失高并发。MVCC就是这样应运而生！</p>
 
-            
-              MySQL中utf8字符集使用三个字节编码一个字符，自2004（mysql4.1）年被引入，能够支持绝大多数语言，但依然有些字符不能正确编码，如表情字符。为此mysql5.5引入了utf8mb4字符集，提供了另一种选择。在mysql5.7对utf8mb4进行了大幅优化，并丰富了校验字符集。直到今日m
-          <div class="read-more">
-            <a href="/2018/06/16/MySQL8默认字符集utf8mb4/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
+            </div>
           
 
     
-  </article>
+      <footer class="post-footer">
+		
+		<div class="post-tags">
+		  
+			<a href="/tags/MySQL/">MySQL</a>
+		  
+		</div>
+		
 
         
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
         
-          <a class="cust-link" href="/2018/06/14/MySQL8-基于角色的权限管理/">MySQL8 基于角色的权限管理</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 14 2018
-      </time>
-    </header>
-
-
-
+  <nav class="post-nav">
     
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              MySQL8新增了角色(role)的概念，使账号权限的管理，更加灵活方便。所谓角色，就是一些权限的集合。然后再把该集合授权给某个账户（往往是某一批账户，因为账号会绑定IP，不同的IP，虽然账号名相同被视为不同账号），这样当我们需要对这些账号减少或增加权限时，只需要修改权限集合（role）即可，不用单
-          <div class="read-more">
-            <a href="/2018/06/14/MySQL8-基于角色的权限管理/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
     
-  </article>
-
-        
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/06/12/MySQL-8-中复制延时的测量与监控/">MySQL 8 中复制延时的测量与监控分析</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 12 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              传统复制延时算法
-传统复制延迟算法存在一些问题：
-
- 1. slave 延迟是基于Event, 即一个语句在master上开始执行的时间，如果在master上执行一个DML语句，等待一小时再commit,这是slave会瞬时延迟3600s,但很快消失了。一种更准确的算法是基于一个事务在master上
-          <div class="read-more">
-            <a href="/2018/06/12/MySQL-8-中复制延时的测量与监控/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/06/12/The-Flow-Control-in-MGR/">The Flow Control in MGR</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 12 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              MGR 中Flow Control的实现方式
-在MySQL高可用领域，Percona 将MySQL和Galera Cluster相融合，形成PXC分支，可谓是一枝独秀，它不仅实现了数据的强（或较强）一致性，而且完美实现failover，即当有一个节点crash时，数据零丢失切换至其它节点，这使其在各
-          <div class="read-more">
-            <a href="/2018/06/12/The-Flow-Control-in-MGR/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/06/06/熟读50个句子可背诵7000单词/">熟读50个句子可背诵7000单词</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 06 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              俞敏洪从100套真题中提炼而出的经典句子
- 1.  Typical of the grassland dwellers of the continent is the American antelope, or pronghorn.
-     
-      美洲羚羊，或称叉角羚，是该大陆典型的草原动
-          <div class="read-more">
-            <a href="/2018/06/06/熟读50个句子可背诵7000单词/" class="cust-link">Readmore</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/06/06/hello-world/">Hello World</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 06 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in 
-          <div class="read-more">
-            <a href="/2018/06/06/hello-world/" class="cust-link"></a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
-        
-  <nav class="pagination">
-    
-      <a class="prev" href="/page/4/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text">Prev</span>
+      <a class="next" href="/2019/03/22/一条delete语句导致slave-hang住一天/">
+        <span class="next-text nav-default">一条delete语句导致slave hang住一天</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
       </a>
     
-    
   </nav>
+
+        
+
+
+
+<div id="gcontainer"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  id: 'MySQL中的MVCC协议', // 可选。默认为 location.href
+  owner: 'mount565',
+  repo: 'gitment-comments',
+  oauth: {
+    client_id: '09bfef25af96c2218b13',
+    client_secret: '192a84d4a407523b4db0b65ffbef01098d2fefa3',
+  },
+})
+gitment.render('gcontainer')
+</script>
+
+
+
+
+      </footer>
+    
+  </article>
 
     </div>
     <div id="secondary">
