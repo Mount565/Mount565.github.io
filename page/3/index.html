@@ -168,6 +168,71 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="cust-link" href="/2018/08/28/MySQL5-6-Slave复制报1837导致事务不一致/">MySQL5.6 Slave复制报1837导致事务不一致</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Aug 28 2018
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              问题：
+这个问题发生在我们灾备环境：
+1
+2
+
+
+OS 版本: CentOS 6.9
+MySQL 版本: 5.6.19
+
+
+
+
+mysql相关配置：
+
+1
+2
+3
+4
+5
+6
+7
+8
+
+
+binlog_format=ROW
+gtid_mode=ON
+log_slave_updates=ON
+
+enf
+          <div class="read-more">
+            <a href="/2018/08/28/MySQL5-6-Slave复制报1837导致事务不一致/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="cust-link" href="/2018/07/27/宿主机重启导致slave异常分析记/">宿主机重启导致slave异常分析记</a>
         
       </h1>
@@ -563,47 +628,6 @@ mysql> show global status like 'I
   </article>
 
         
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/06/27/MySQL中的open-files-limit/">MySQL中的open_files_limit</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Jun 27 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              open_files_limit 是mysql中的一个全局变量且不可动态修改。它控制着mysqld进程能使用的最大文件描述(FD)符数量。需要注意的是这个变量的值并不一定是你设定的值，mysqld会在系统允许的情况下尽量获取更多的FD数量。
-
-首先我们看下官方文档的定义：
-
-The number o
-          <div class="read-more">
-            <a href="/2018/06/27/MySQL中的open-files-limit/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
         
   <nav class="pagination">
     
@@ -641,14 +665,14 @@ The number o
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">27</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">14</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">27</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">15</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 

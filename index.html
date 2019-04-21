@@ -168,6 +168,47 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="cust-link" href="/2019/04/21/阻止proxysql写组-writer-group-中有多个server/">阻止proxysql写组(writer group)中有多个server</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Apr 21 2019
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              现状
+大家都知道，proxysql根据mysql中的read_only属性来判断server是否允许写入，即：
+
+ 1. 当read_only=0|OFF时，说明server允许写入,把它放到writer group中；
+ 2. 当read_only=1|ON时，说明server是只读，确保它在re
+          <div class="read-more">
+            <a href="/2019/04/21/阻止proxysql写组-writer-group-中有多个server/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="cust-link" href="/2019/03/31/MySQL中的MVCC协议/">MySQL中的MVCC协议</a>
         
       </h1>
@@ -536,45 +577,6 @@ SAVE MYSQL USERS TO DIS
   </article>
 
         
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/11/24/ProxySQL-Docker化部署共享数据目录/">ProxySQL Docker化部署共享数据目录</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Nov 24 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              今天突然有这样一个想法，proxy SQL docker化部署，data目录当然要外挂，可否启用多个docker容器，共用一个数据目录呢？这样能否达到一个集群的效果呢？带着这个想法做了一些尝试。
-
-docker 镜像的entry point 使用front进程启动proxysql，这样不会生产pid
-          <div class="read-more">
-            <a href="/2018/11/24/ProxySQL-Docker化部署共享数据目录/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
         
   <nav class="pagination">
     
@@ -607,14 +609,14 @@ docker 镜像的entry point 使用front进程启动proxysql，这样不会生产
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">27</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">14</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">27</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">15</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 

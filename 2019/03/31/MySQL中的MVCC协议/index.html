@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="MVCC是一种并发控制协议，我们经常会听到协议两个字，比如Tcp协议，HTTP协议，raft协议等等。感觉协议高深莫测，只有那些高手怪才才能理解。其实我对协议的理解很简单，协议就是为完成某项作业而指定的一系列约定！比如古时候士兵放哨，遇见敌情通过点火放烟的方式来传递信息，这就是简单的协议。只不过互联">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-03-31T10:57:34.340Z">
+<meta property="og:updated_time" content="2019-04-14T08:54:29.906Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL中的MVCC协议">
 <meta name="twitter:description" content="MVCC是一种并发控制协议，我们经常会听到协议两个字，比如Tcp协议，HTTP协议，raft协议等等。感觉协议高深莫测，只有那些高手怪才才能理解。其实我对协议的理解很简单，协议就是为完成某项作业而指定的一系列约定！比如古时候士兵放哨，遇见敌情通过点火放烟的方式来传递信息，这就是简单的协议。只不过互联">
@@ -185,7 +185,7 @@
             <div class="post-content">
             <p>MVCC是一种并发控制协议，我们经常会听到协议两个字，比如Tcp协议，HTTP协议，raft协议等等。感觉协议高深莫测，只有那些高手怪才才能理解。其实我对协议的理解很简单，协议就是为完成某项作业而指定的一系列约定！比如古时候士兵放哨，遇见敌情通过点火放烟的方式来传递信息，这就是简单的协议。只不过互联网那些协议搞得更加复杂更加严谨罢了。</p>
 <p>我们再来看看MVCC协议。MVCC的全称是Multi-Version Concurrecy Control，即多版本并发控制协议。它解决来我们什么问题呢？</p>
-<p>我们都知道SQL标准中定义了四种隔离级别 。MySQL数据库完整地实现了这四种隔离级别（并不是所有的数据库都这么听话），这其中MVCC 功不可没。当然MVCC并不是实现这些隔离级别的必要条件，但若没有MVCC，读写都需要隔离，数据库的性能会非常差，高并发更是无从谈起。因此MVCC使得读操作不再影响写操作，读写可以并发执行，同时又保障来事务的隔离级别。这使得MVCC是所有事务型数据库中必不可少的一部分。</p>
+<p>我们都知道SQL标准中定义了四种隔离级别 。MySQL数据库完整地实现了这四种隔离级别（并不是所有的数据库厂商都这么听话），这其中MVCC 功不可没。当然MVCC并不是实现这些隔离级别的必要条件，但若没有MVCC，读写的隔离就需要加锁，数据库的性能会非常差，高并发更是无从谈起。因此MVCC使得读操作不再影响写操作，读写可以并发执行，同时又保障来事务的隔离级别。这使得MVCC是所有事务型数据库中必不可少的一部分。</p>
 <p>那么数据库又是这么实现的呢？</p>
 <p>在InnoDB引擎中，每一行都有三个隐藏的内部属性：</p>
 <ol>
@@ -223,6 +223,12 @@
         
         
   <nav class="post-nav">
+    
+      <a class="prev" href="/2019/04/21/阻止proxysql写组-writer-group-中有多个server/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">阻止proxysql写组(writer group)中有多个server</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
     
     
       <a class="next" href="/2019/03/22/一条delete语句导致slave-hang住一天/">
@@ -281,14 +287,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">27</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">14</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">27</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">15</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
