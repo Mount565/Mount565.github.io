@@ -12,12 +12,10 @@
 
 
 
-  <meta name="description" content="ProxySQL 之Multiplexing"/>
+  <meta name="description" content="高可用的悲剧"/>
 
 
 
-
-  <meta name="keywords" content="ProxySQL," />
 
 
 
@@ -32,21 +30,21 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/"/>
+<link rel="canonical" href="https://dbalife.info/2019/06/14/高可用的悲剧/"/>
 
 
-<meta name="description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
-<meta name="keywords" content="ProxySQL">
+<meta name="description" content="互联网企业，特别是大型互联网企业，纷纷以服务的高可用而著称。如果一家有点名气的企业网站挂了半个小时，该消息瞬间就会在各论坛、微博等社交媒体传播。当然关注这些信息的人也都是一些互联网从业者。这是件大事，能够亲身经历会无比荣幸，因此虽然这家公司的网站挂了，但域名访问量会飙升。大家都想亲临这无比荣幸的时刻">
+<meta name="keywords" content="IT,MySQL,Database,Programming,English Learning">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ProxySQL 之Multiplexing">
-<meta property="og:url" content="https://dbalife.info/2018/10/25/ProxySQL-之Multiplexing/index.html">
+<meta property="og:title" content="高可用的悲剧">
+<meta property="og:url" content="https://dbalife.info/2019/06/14/高可用的悲剧/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
+<meta property="og:description" content="互联网企业，特别是大型互联网企业，纷纷以服务的高可用而著称。如果一家有点名气的企业网站挂了半个小时，该消息瞬间就会在各论坛、微博等社交媒体传播。当然关注这些信息的人也都是一些互联网从业者。这是件大事，能够亲身经历会无比荣幸，因此虽然这家公司的网站挂了，但域名访问量会飙升。大家都想亲临这无比荣幸的时刻">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-25T12:56:13.791Z">
+<meta property="og:updated_time" content="2019-06-13T22:23:08.168Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="ProxySQL 之Multiplexing">
-<meta name="twitter:description" content="关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见这里 或 这里. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。  我觉得有两个关键点不易理解：   * mysql_users.transaction_persistent    单独理解这个">
+<meta name="twitter:title" content="高可用的悲剧">
+<meta name="twitter:description" content="互联网企业，特别是大型互联网企业，纷纷以服务的高可用而著称。如果一家有点名气的企业网站挂了半个小时，该消息瞬间就会在各论坛、微博等社交媒体传播。当然关注这些信息的人也都是一些互联网从业者。这是件大事，能够亲身经历会无比荣幸，因此虽然这家公司的网站挂了，但域名访问量会飙升。大家都想亲临这无比荣幸的时刻">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +91,7 @@
 
 
 
-    <title> ProxySQL 之Multiplexing - DBA Life </title>
+    <title> 高可用的悲剧 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +168,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          ProxySQL 之Multiplexing
+          高可用的悲剧
         
       </h1>
 
       <time class="post-time">
-          Oct 25 2018
+          Jun 14 2019
       </time>
     </header>
 
@@ -183,18 +181,22 @@
 
     
             <div class="post-content">
-            <p>关于Multiplexing 官方文档有一篇解释，网上也有许多其它的解释,可参见<a href="http://seanlook.com/2017/04/17/mysql-proxysql-multiplexing/" target="_blank" rel="noopener">这里</a> 或 <a href="https://www.awsinfradb.com/single-post/2017/03/06/Multiplexing-in-ProxySQL" target="_blank" rel="noopener">这里</a>. 这里不再重复解释网上解释了许多遍的东西，这里只解释下容易混淆的关键部分。</p>
-<p>我觉得有两个关键点不易理解：</p>
-<ul>
-<li>mysql_users.transaction_persistent<br>单独理解这个参数，也很简单。设置为1后就是确保一个事务内所有的SQL都发送到同一个连接。这时路由规则已经被禁用，直到事务commit.</li>
-<li>mysql_query_rules.multiplex<br>Multiplex 这个参数可以针对某条规则设置的，当然也可针对全局（SET mysql-multiplexing=’false’）。禁用multiplex后，后端连接会与前端绑定，但路由规则是起作用的。<br>怎么理解？？？<br>举例：<br>当执行了一条会禁用multiplex的语句，如select @v;.ProxySQL会根据路由规则，在指定的hostgroup（readers group）中的某台server上建立一个后端连接，这个连接会与前端连接绑定。然后SQL路由规则依然生效，但凡是路由到readers group的SQL都会使用同一个连接，将SQL发送到同一台后端server。而路由到writergroup的SQL是可以更换writer group的后台连接的。</li>
-</ul>
-<p>通过上面的描述，应该可以体会到这两个特性的不同。</p>
-<p>transaction_persistent 针对用户设置，而multiplexing则是针对规则设置。<br>transaction_persistent <strong>一旦开启事务，事务内的SQL不再走路由，都会发给同一个连接</strong>。而multiplexing的禁用同样会发生连接绑定,但路由规则还会起作用 ，只有路由到与绑定连接所在的后端server处于同一hostgroup时，才会使用所绑定的连接，而路由到其它的hostgroup时，连接是可以更换的。</p>
-<p>再举例： 有一个Writer Hostgroup (a),里面有一台server a. 一个Reader Hostgroup (b,c,d)里面有三台server: b、c、d. 客户端执行了一个SQL：select @v, 这会导致禁用multiplexing. 假如这个语句在server b上执行，那么后端ProxySQL与server b的连接就会与client 连接绑定。这个client以后任何路由到reader hostgroup的query都会使用这个连接发送到server b , 而不会再发送到server c,d. 但这个client路由到Writer hostgroup的query则是可以更换连接与访问server a的。这种连接绑定可以成为<strong>同一个hostgroup内连接绑定</strong>！</p>
-<p>由此可以看到，启用transaction_persistent 是连接事务内强绑定，SQL不再走路由规则，事务完成后解除绑定。而multiplex针对某些语句（包括active transaction）自动禁用，禁用后连接不再被复用，与client绑定，但路由规则还是起作用。如果客户端的SQL因为路由规则，被分发到其它hostgroup(不是所绑定的连接后端server所在的hostgroup),ProxySQL还是会分配其它hostgroup的连接个client来执行SQL。 这时来看，好像连接并没有绑定！其实它只是针对同一个hostgroup来说是绑定了的。</p>
-<p>对于某些命令（如select @v1），multipex被禁用后，后台连接在client连接退出时，会自动销毁。也许重置连接的相关变量比重新建立一个连接相比开销更大吧！</p>
-<p>说的挺啰嗦，希望能说明白！</p>
+            <p>互联网企业，特别是大型互联网企业，纷纷以服务的高可用而著称。如果一家有点名气的企业网站挂了半个小时，该消息瞬间就会在各论坛、微博等社交媒体传播。当然关注这些信息的人也都是一些互联网从业者。这是件大事，能够亲身经历会无比荣幸，因此虽然这家公司的网站挂了，但域名访问量会飙升。大家都想亲临这无比荣幸的时刻啊！</p>
+<p>这使我禁不住思考，互联网的发展是不是将人类社会引入一种病态。互联网是把我们的生活丰富成什么样子了？</p>
+<p>打开抖音，抖上三个小时，抖累了关了手机，然后想一想，我抖了点儿啥？过去的三个小时你看了那么多小视频，然而此时此刻，你还记得哪个？</p>
+<p>抖音是高可用的，若是那天抖音挂了，绝对会上头条。一天24小时，你随时随地都可以抖。你可以从孩童抖到少年，从少年抖到青年。然而，少年不知孩童之所抖，青年不知少年之所抖！你却想毒瘾一般一直抖下去，抖尽了人生的大好年华！待到暮年，回首人生，依然不知此生之所抖啊！</p>
+<p>我们这一代的生活，已经超出了上一代人的理解了。我给我妈看了几个微信小视频，我妈感到不理解：这些都是什么呀？有什么教育意义？</p>
+<p>上次回老家看我姥姥，我一边看手机，一边和我姥姥聊天，她忽然好奇地问：“你怎么老看手机呀，你手机里面有什么啊？” 我一愣，这是个好问题啊！然而，我却不知道该如何回答。我把思绪收回来，专注到我所看的内容上，发现我是在看微博。可是刚才我并没有意识到我在看微博，甚至我都没有意识到我在看手机！但我还是在我姥姥面前耍了一把酷！我收起手机放在口袋，自豪地说：“我手机里面包罗万象，大千世界，奇闻逸事，要啥有啥。” 但这些都是发生在远时远方，和我的此时此刻此地没有任何关系。手机里那些乱七八糟的东西就这样偷走了我的此时此刻，偷走了我的人生。还多亏我姥姥明智，一个简单的问题，就把我从幻境中拉了回来！</p>
+<p>天猫淘宝似乎永远不会挂，体现了工程师们过硬的技术素质。但这些还不够，还想整个大的，于是搞了个双十一。并且以双十一系统支撑了多少交易而自豪。我的天啊，至于吗，不就卖个东西吗？若是朱元璋听说有这样的事，肯等会有一百个问题。商店都是10点开门营运22点闭门打烊的啊。你这个天猫凭啥可以24小时营运啊。买个东西今天买和明天买有什么区别？</p>
+<p>互联网高可用永远不挂，是不是一种病啊？要知道我们人还有挂的时候呢。要是人能高可用，永远不挂该多好啊！在精神和肉体之间可否加个LB？有没有人研究过？人类科技的发展是不是走错了方向？</p>
+<p>如今网络字典里多了一个词：“低头族”。 看来越来越多人注意到这个问题了。你看看地铁上，公交上，马路上，大家都在干什么？更有甚至骑着自行车都看这手机，我真的很想问问这些人：“你手机里有什么呀，你怎么老看手机啊？”。</p>
+<p>去学校食堂转一圈，去公司食堂转一圈，看看大家是不是右手拿着筷子，左手拿着手机。一顿饭吃下来，都不知道吃得是啥。我真的很想问问这些人：“你手机里有什么呀，你怎么老看手机啊？“</p>
+<p>夜晚，睡觉前，有谁不是躺在床上就拿起手机，知道双手酸累了才不得不放下睡觉。我希望大家拿起手机那一刻，问问自己：“咦？手机里有什么呀，我怎么老看手机啊？”</p>
+<p>这些就是互联网对我们生活的变革，似乎和高可用没有关系。但我也是互联网从业者，深深知道服务挂几分钟，就好像塌了半边天似的，但是互联网高可用真的那么必要吗？大家似乎都疯狂地在高可用上竞赛，这是不是一种病态啊！</p>
+<p>如果这是市场选择的结果，那国家就应该通过立法来纠正。因为这种市场选择严重扰乱了人们的正常生活。国家可以通过立法来规定，快手/抖音等每天只能抖8个小时；天猫/京东等每天8天开业22点歇业；朋友圈/微博只能在规定时间发。除了媒体，医疗等必须服务24小时提供外，其余都应予以限制。我们要的是此时此刻的生活，需要的是触手可及的生活，我们要觉察明了每一次呼吸，而不是眼花缭乱的屏幕。</p>
+<p>请不要怪人们的自制力差，这已经上升到了一个社会问题，不是单凭自制力就能解决的。因为这种成瘾性已经和毒品无疑了，一个吸毒上瘾的人，戒不了，你能怪他自制力差吗？国家禁毒是从源头上控制。同样国家限制互联网服务的营业时间也是从源头上控制。正所谓：不见可欲，使民心不乱！</p>
+<p>我希望，在不远的将来，有一位人大代表在全国人民代表大会上勇敢地提出这个问题！我希望，我们祖国的花朵能够成长在大自然的怀抱，而不是高科技的屏幕！我更希望，高科技的发展能够与我们传统文化更好地融合，促进人与自然的亲和与交融，给人们的生活带来平衡和安详！</p>
+<p>相信，这一天会到来！</p>
 
             </div>
           
@@ -202,26 +204,20 @@
     
       <footer class="post-footer">
 		
-		<div class="post-tags">
-		  
-			<a href="/tags/ProxySQL/">ProxySQL</a>
-		  
-		</div>
-		
 
         
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/11/02/xtrabackup增量备份造成磁盘Read-IO飙升记/">
+      <a class="prev" href="/2019/06/16/MySQL之死锁细说/">
         <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">xtrabackup增量备份造成磁盘Read IO飙升记</span>
+        <span class="prev-text nav-default">MySQL之死锁细说</span>
         <span class="prev-text nav-mobile">Prev</span>
       </a>
     
     
-      <a class="next" href="/2018/10/25/ProxySQL-Writing-Query-routed-to-Readers-hostgroup/">
-        <span class="next-text nav-default">ProxySQL-Writing Query routed to Readers hostgroup</span>
+      <a class="next" href="/2019/05/17/Xtrabackup-lock-ddl-per-table-causes-FLUSH-TABLES-WITH-READ-LOCK-skipped/">
+        <span class="next-text nav-default">Xtrabackup lock-ddl-per-table causes FLUSH TABLES WITH READ LOCK skipped</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -237,7 +233,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'ProxySQL 之Multiplexing', // 可选。默认为 location.href
+  id: '高可用的悲剧', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {
