@@ -35,18 +35,18 @@
 <link rel="canonical" href="https://dbalife.info/2019/06/16/MySQL之死锁细说/"/>
 
 
-<meta name="description" content="研发同学往往对死锁有些误解，带着这种误解排查问题，就会误入岐途。  记得有一位WP同事问：“经常遇到mysql死锁，这个怎么解决啊？” 我说：”你怎么知道是死锁？“ WP： “我就执行了一个update, 他就卡住在那里好半天，这不是死锁了吗？“ 我忍不住笑了起来：”这可不是死锁，这是死等！“  死">
+<meta name="description" content="有些研发同学对MySQL的死锁不是很清楚，常常把一些事务超时等现象归咎于可能存在死锁，带着这种误解排查问题，往往会徒劳无功，离真相越来越远。  记得有一位WP同事问：“经常遇到mysql死锁，这个怎么解决啊？” 我说：”你怎么知道是死锁？“ WP： “我就执行了一个update, 他就卡住在那里好半">
 <meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL之死锁细说">
 <meta property="og:url" content="https://dbalife.info/2019/06/16/MySQL之死锁细说/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="研发同学往往对死锁有些误解，带着这种误解排查问题，就会误入岐途。  记得有一位WP同事问：“经常遇到mysql死锁，这个怎么解决啊？” 我说：”你怎么知道是死锁？“ WP： “我就执行了一个update, 他就卡住在那里好半天，这不是死锁了吗？“ 我忍不住笑了起来：”这可不是死锁，这是死等！“  死">
+<meta property="og:description" content="有些研发同学对MySQL的死锁不是很清楚，常常把一些事务超时等现象归咎于可能存在死锁，带着这种误解排查问题，往往会徒劳无功，离真相越来越远。  记得有一位WP同事问：“经常遇到mysql死锁，这个怎么解决啊？” 我说：”你怎么知道是死锁？“ WP： “我就执行了一个update, 他就卡住在那里好半">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-16T07:50:43.445Z">
+<meta property="og:updated_time" content="2019-06-21T12:17:52.715Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL之死锁细说">
-<meta name="twitter:description" content="研发同学往往对死锁有些误解，带着这种误解排查问题，就会误入岐途。  记得有一位WP同事问：“经常遇到mysql死锁，这个怎么解决啊？” 我说：”你怎么知道是死锁？“ WP： “我就执行了一个update, 他就卡住在那里好半天，这不是死锁了吗？“ 我忍不住笑了起来：”这可不是死锁，这是死等！“  死">
+<meta name="twitter:description" content="有些研发同学对MySQL的死锁不是很清楚，常常把一些事务超时等现象归咎于可能存在死锁，带着这种误解排查问题，往往会徒劳无功，离真相越来越远。  记得有一位WP同事问：“经常遇到mysql死锁，这个怎么解决啊？” 我说：”你怎么知道是死锁？“ WP： “我就执行了一个update, 他就卡住在那里好半">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -183,7 +183,7 @@
 
     
             <div class="post-content">
-            <p>研发同学往往对死锁有些误解，带着这种误解排查问题，就会误入岐途。</p>
+            <p>有些研发同学对MySQL的死锁不是很清楚，常常把一些事务超时等现象归咎于可能存在死锁，带着这种误解排查问题，往往会徒劳无功，离真相越来越远。</p>
 <p>记得有一位WP同事问：“经常遇到mysql死锁，这个怎么解决啊？”<br>我说：”你怎么知道是死锁？“<br>WP： “我就执行了一个update, 他就卡住在那里好半天，这不是死锁了吗？“<br>我忍不住笑了起来：”这可不是死锁，这是<strong>死等</strong>！“</p>
 <p><strong>死等和死锁可不是一回事，如果你遇到了死等，大可放心，肯定不是死锁；如果发生了死锁，也大可放心，绝对不会死等。</strong></p>
 <p>这是因为MySQL内部有一套死锁检测机制，一旦发生死锁会立即回滚一个事务，让另一个事务执行下去。并且这个死锁回滚的的错误消息也会发送给客户端，如果应用端详细处理了各种异常，是会发现死锁的，不用经常追着DBA问：“数据库最近有没有死锁啊？”<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ERROR 1213 (40001): Deadlock found when trying to get lock;try restarting transaction.</span><br></pre></td></tr></table></figure></p>
@@ -280,7 +280,7 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Xtrabackup/">Xtrabackup</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
