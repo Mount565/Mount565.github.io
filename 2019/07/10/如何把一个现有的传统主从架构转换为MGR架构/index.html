@@ -17,7 +17,7 @@
 
 
 
-  <meta name="keywords" content="MySQL,MGR," />
+  <meta name="keywords" content="MySQL,Group Replication,MGR," />
 
 
 
@@ -36,14 +36,14 @@
 
 
 <meta name="description" content="随着MySQL版本的迭代，功能的完善，Group replication必将是未来的主流。在不远的将来，必将有许多的传统主从架构改为MGR复制架构。然而这个转换过程并不复杂！  一、完善配置 group replication 插件要求如下配置。如果你的my.cnf缺少这些配置需要加上。  1 2">
-<meta name="keywords" content="MySQL,MGR">
+<meta name="keywords" content="MySQL,Group Replication,MGR">
 <meta property="og:type" content="article">
 <meta property="og:title" content="如何把一个现有的传统主从架构转换为MGR架构">
 <meta property="og:url" content="https://dbalife.info/2019/07/10/如何把一个现有的传统主从架构转换为MGR架构/index.html">
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="随着MySQL版本的迭代，功能的完善，Group replication必将是未来的主流。在不远的将来，必将有许多的传统主从架构改为MGR复制架构。然而这个转换过程并不复杂！  一、完善配置 group replication 插件要求如下配置。如果你的my.cnf缺少这些配置需要加上。  1 2">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-07-10T12:57:59.262Z">
+<meta property="og:updated_time" content="2019-07-10T13:04:32.052Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="如何把一个现有的传统主从架构转换为MGR架构">
 <meta name="twitter:description" content="随着MySQL版本的迭代，功能的完善，Group replication必将是未来的主流。在不远的将来，必将有许多的传统主从架构改为MGR复制架构。然而这个转换过程并不复杂！  一、完善配置 group replication 插件要求如下配置。如果你的my.cnf缺少这些配置需要加上。  1 2">
@@ -218,9 +218,6 @@
 <p>这里需要给这个cluster去一个名字：test_mgr. 创建成功后，会在primary节点上创建数据库mysql_innodb_cluster_metadata， 里面保存了这个cluster的元数据信息！</p>
 <p>查看cluster的状态：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"> MySQL  192.168.216.200:3306 ssl  JS &gt; c.status()</span><br><span class="line">&#123;</span><br><span class="line">    &quot;clusterName&quot;: &quot;test_mgr&quot;,</span><br><span class="line">    &quot;defaultReplicaSet&quot;: &#123;</span><br><span class="line">        &quot;name&quot;: &quot;default&quot;,</span><br><span class="line">        &quot;primary&quot;: &quot;192.168.216.200:3306&quot;,</span><br><span class="line">        &quot;ssl&quot;: &quot;DISABLED&quot;,</span><br><span class="line">        &quot;status&quot;: &quot;OK&quot;,</span><br><span class="line">        &quot;statusText&quot;: &quot;Cluster is ONLINE and can tolerate up to ONE failure.&quot;,</span><br><span class="line">        &quot;topology&quot;: &#123;</span><br><span class="line">            &quot;192.168.216.200:3306&quot;: &#123;</span><br><span class="line">                &quot;address&quot;: &quot;192.168.216.200:3306&quot;,</span><br><span class="line">                &quot;mode&quot;: &quot;R/W&quot;,</span><br><span class="line">                &quot;readReplicas&quot;: &#123;&#125;,</span><br><span class="line">                &quot;role&quot;: &quot;HA&quot;,</span><br><span class="line">                &quot;status&quot;: &quot;ONLINE&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;192.168.216.201:3306&quot;: &#123;</span><br><span class="line">                &quot;address&quot;: &quot;192.168.216.201:3306&quot;,</span><br><span class="line">                &quot;mode&quot;: &quot;R/O&quot;,</span><br><span class="line">                &quot;readReplicas&quot;: &#123;&#125;,</span><br><span class="line">                &quot;role&quot;: &quot;HA&quot;,</span><br><span class="line">                &quot;status&quot;: &quot;ONLINE&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;192.168.216.202:3306&quot;: &#123;</span><br><span class="line">                &quot;address&quot;: &quot;192.168.216.202:3306&quot;,</span><br><span class="line">                &quot;mode&quot;: &quot;R/O&quot;,</span><br><span class="line">                &quot;readReplicas&quot;: &#123;&#125;,</span><br><span class="line">                &quot;role&quot;: &quot;HA&quot;,</span><br><span class="line">                &quot;status&quot;: &quot;ONLINE&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;topologyMode&quot;: &quot;Single-Primary&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;groupInformationSourceMember&quot;: &quot;192.168.216.200:3306&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> MySQL  192.168.216.200:3306 ssl  JS &gt; c.describe()</span><br><span class="line">&#123;</span><br><span class="line">    &quot;clusterName&quot;: &quot;test_mgr&quot;,</span><br><span class="line">    &quot;defaultReplicaSet&quot;: &#123;</span><br><span class="line">        &quot;name&quot;: &quot;default&quot;,</span><br><span class="line">        &quot;topology&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;address&quot;: &quot;192.168.216.201:3306&quot;,</span><br><span class="line">                &quot;label&quot;: &quot;192.168.216.201:3306&quot;,</span><br><span class="line">                &quot;role&quot;: &quot;HA&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;address&quot;: &quot;192.168.216.202:3306&quot;,</span><br><span class="line">                &quot;label&quot;: &quot;192.168.216.202:3306&quot;,</span><br><span class="line">                &quot;role&quot;: &quot;HA&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;address&quot;: &quot;192.168.216.200:3306&quot;,</span><br><span class="line">                &quot;label&quot;: &quot;192.168.216.200:3306&quot;,</span><br><span class="line">                &quot;role&quot;: &quot;HA&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        &quot;topologyMode&quot;: &quot;Single-Primary&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h3 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h3><p>从步骤来看，把生产上一个传统复制架构改成一个MGR架构并不复杂，基本上就是一次性修改好<code>my.cnf</code>配置，然后重启一下mysql就可以了。如果是新搭建一套MGR架构，建议使用mysql-shell， 步骤更加简单。以后对MGR的管理也可以都是用mysql-shell.</p>
-<ul>
-<li>MySQL</li>
-</ul>
 
             </div>
           
@@ -232,6 +229,8 @@
 		  
 			<a href="/tags/MySQL/">MySQL</a>
 		  
+			<a href="/tags/Group-Replication/">Group Replication</a>
+		  
 			<a href="/tags/MGR/">MGR</a>
 		  
 		</div>
@@ -240,6 +239,12 @@
         
         
   <nav class="post-nav">
+    
+      <a class="prev" href="/2019/07/24/通过ProxySQL正则表达式规则阻止某张表的写入/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">通过ProxySQL正则表达式规则阻止某张表的写入</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
     
     
       <a class="next" href="/2019/06/16/MySQL之死锁细说/">
@@ -298,14 +303,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">15</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Xtrabackup/">Xtrabackup</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
