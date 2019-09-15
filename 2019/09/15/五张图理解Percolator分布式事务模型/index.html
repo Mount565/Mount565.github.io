@@ -12,12 +12,12 @@
 
 
 
-  <meta name="description" content="ProxySQL 白名单与黑名单"/>
+  <meta name="description" content="五张图理解Percolator分布式事务模型"/>
 
 
 
 
-  <meta name="keywords" content="ProxySQL," />
+  <meta name="keywords" content="TiDB," />
 
 
 
@@ -32,21 +32,27 @@
 
 
 
-<link rel="canonical" href="https://dbalife.info/2018/12/29/ProxySQL-白名单与黑名单/"/>
+<link rel="canonical" href="https://dbalife.info/2019/09/15/五张图理解Percolator分布式事务模型/"/>
 
 
-<meta name="description" content="ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！  黑名单 对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rul">
-<meta name="keywords" content="ProxySQL">
+<meta name="description" content="Percolator是Google为实现在海量数据集中更新少量增量数据而创建的一个事务模型。大家知道，Bigtable是Google的分布式存储系统，Google使用Bigtable来存储Web的索引，但遗憾的是Bigtable不支持mulit-row transaction, Percolator">
+<meta name="keywords" content="TiDB">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ProxySQL 白名单与黑名单">
-<meta property="og:url" content="https://dbalife.info/2018/12/29/ProxySQL-白名单与黑名单/index.html">
+<meta property="og:title" content="五张图理解Percolator分布式事务模型">
+<meta property="og:url" content="https://dbalife.info/2019/09/15/五张图理解Percolator分布式事务模型/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！  黑名单 对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rul">
+<meta property="og:description" content="Percolator是Google为实现在海量数据集中更新少量增量数据而创建的一个事务模型。大家知道，Bigtable是Google的分布式存储系统，Google使用Bigtable来存储Web的索引，但遗憾的是Bigtable不支持mulit-row transaction, Percolator">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-12-29T12:28:02.143Z">
+<meta property="og:image" content="https://dbalife.info/images/percolator1.png">
+<meta property="og:image" content="https://dbalife.info/images/percolator2.png">
+<meta property="og:image" content="https://dbalife.info/images/percolator3.png">
+<meta property="og:image" content="https://dbalife.info/images/percolator4.png">
+<meta property="og:image" content="https://dbalife.info/images/percolator5.png">
+<meta property="og:updated_time" content="2019-09-15T10:52:26.871Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="ProxySQL 白名单与黑名单">
-<meta name="twitter:description" content="ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！  黑名单 对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rul">
+<meta name="twitter:title" content="五张图理解Percolator分布式事务模型">
+<meta name="twitter:description" content="Percolator是Google为实现在海量数据集中更新少量增量数据而创建的一个事务模型。大家知道，Bigtable是Google的分布式存储系统，Google使用Bigtable来存储Web的索引，但遗憾的是Bigtable不支持mulit-row transaction, Percolator">
+<meta name="twitter:image" content="https://dbalife.info/images/percolator1.png">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -93,7 +99,7 @@
 
 
 
-    <title> ProxySQL 白名单与黑名单 - DBA Life </title>
+    <title> 五张图理解Percolator分布式事务模型 - DBA Life </title>
     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
    <script>
      (adsbygoogle = window.adsbygoogle || []).push({
@@ -170,12 +176,12 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          ProxySQL 白名单与黑名单
+          五张图理解Percolator分布式事务模型
         
       </h1>
 
       <time class="post-time">
-          Dec 29 2018
+          Sep 15 2019
       </time>
     </header>
 
@@ -183,23 +189,28 @@
 
     
             <div class="post-content">
-            <p>ProxySQL支持白名单（white list）和黑名单(black list)， 其支持方式还是通过路由规则来实现的。它强悍的路由功能似乎无所不能啊！但这种方式并不能阻止用户连接，只是阻止任何的查询！</p>
-<h4 id="黑名单"><a href="#黑名单" class="headerlink" title="黑名单"></a>黑名单</h4><p>对黑名单的支持很简单，比如我们想禁止某个IP访问只需在mysql_query_rules里面插入一条记录。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules (rule_id,active,client_addr,error_msg,apply)values(3,1,&apos;192.168.216.146&apos;,&apos;this ip is banned!&apos;,1);</span><br><span class="line">load mysql query rules to run;</span><br></pre></td></tr></table></figure></p>
-<p>这样IP<code>192.168.216.146</code> 依然可以连接，但不能做任何的查询！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from sbtest1 limit 2;</span><br><span class="line">ERROR 1148 (42000): this ip is banned!</span><br></pre></td></tr></table></figure></p>
-<h4 id="白名单"><a href="#白名单" class="headerlink" title="白名单"></a>白名单</h4><p>对白名单的支持就有些复杂了。因为白名单有许多，应用端往往同一个服务会部署多个副本，我们数据库端为每个服务创建一个账号，在指定规则的时候，需要绑定<code>mysql_query_rules.username</code>和<code>mysql_query_rules.client_addr</code>， 这样只有<code>username</code>,<code>client_addr</code>以及我们的路由规则都匹配的时候才算匹配。这会导致同一条规则会有多条记录因为<code>client_addr</code>不同。 若在<code>mysql_query_rules</code>中匹配不到任何规则，则会走该用户所定义的<code>default_hostgroup</code>。这达不到黑名单的目的。因此我们需要定义一个<code>rule_id</code>很大的规则，批量任何的SQL，然后设定一个error_msg予以禁止。这样才能达到目的。<br>这会给规则表的维护带来困难！</p>
-<p>另一种比较好的办法是使用规则链(<code>chained rules</code>),这可以使得<code>mysql_query_rules</code>表不那么乱。下面详细说下这种方式。</p>
-<ol>
-<li>插入一条规则匹配所有的SQL，指定白名单IP（白名单过滤规则）<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules (rule_id,active,client_addr,match_digest,flagOUT,apply)values(5,1,&apos;192.168.216.146&apos;,&apos;.&apos;,10,0);</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>注意，这条规则的rule_id应该是比较小的值，确保所有SQL匹配都用到；这条规则指定了flagOUT=10,apply=0,在得到匹配后，并不应用，而是继续匹配下一条规则（flagIN=10的规则）。</p>
-<ol start="2">
-<li>将其它所有可用的SQL匹配规则的flagIN设为10，以承接白名单过滤的路由规则。</li>
-<li>插入一条禁止所有SQL的规则<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">insert into mysql_query_rules (rule_id,active,match_digest,error_msg,apply)values(100000,1,&apos;.&apos;,&apos;Access banned, maybe your IP is not allowed to do this&apos;,1&apos;);</span><br><span class="line"></span><br><span class="line">mysql&gt; select rule_id, active, flagIN,flagOUT,client_addr,match_digest,error_msg,apply from runtime_mysql_query_rules;</span><br><span class="line">+---------+--------+--------+---------+-----------------+----------------------+--------------------------------------------------------+-------+</span><br><span class="line">| rule_id | active | flagIN | flagOUT | client_addr     | match_digest         | error_msg                                              | apply |</span><br><span class="line">+---------+--------+--------+---------+-----------------+----------------------+--------------------------------------------------------+-------+</span><br><span class="line">| 10      | 1      | 0      | 10      | 192.168.216.146 | .                    | NULL                                                   | 0     |</span><br><span class="line">| 20      | 1      | 10     | NULL    | NULL            | ^SELECT.*FOR UPDATE$ | NULL                                                   | 1     |</span><br><span class="line">| 30      | 1      | 10     | NULL    | NULL            | ^SELECT              | NULL                                                   | 1     |</span><br><span class="line">| 100000  | 1      | 0      | NULL    | NULL            | .                    | Access banned, maybe your IP is not allowed to do this | 1     |</span><br><span class="line">+---------+--------+--------+---------+-----------------+----------------------+--------------------------------------------------------+-------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>即，如果在规则表中没有匹配到任何规则，则禁止走该用户默认的hostgroup。注意，这条规则的rule_id应该最大，之后不应该再有其它规则！</p>
-<p>这种方式的特点是，规则表不太乱，有几个白名单，就插入几条白名单过滤规则就行了，实用性较强！但它也带来了一定的维护的难度，如在白名单上使用了链式路由规则，如果再有其它的需求需要使用链式路由规则呢？整个规则链就要统一调整，而且这种需求很难提前规划。</p>
+            <p>Percolator是Google为实现在海量数据集中更新少量增量数据而创建的一个事务模型。大家知道，Bigtable是Google的分布式存储系统，Google使用Bigtable来存储Web的索引，但遗憾的是Bigtable不支持<code>mulit-row transaction</code>, Percolator的出现就是为了弥补这一缺陷。在Google的系统中，Percolator以Client Library的形式实现，客户只需调用Percolator的相关接口来访问Bigtable就可以了，Bigtable不用做任何改动，最大程度避免了系统间的耦合。</p>
+<p>Percolator并不复杂，虽然Google那篇论文有14页，其实真正讲Percolator事务模型的只有三四页，前面几页讲Google的业务背景，Percolator产生的因缘；后面部分讲的就是评估效果，使用Percolator和Mapreduce的效果对比等。简单来看，它就是实现了一个<strong>去中心化</strong>的两阶段递交（2PC）。 在TiDB中， 它的主要实现逻辑只有1000多行Go代码。</p>
+<p>Percolator主要是通过在数据行中添加两列：<code>lock</code>列和<code>write</code>列（percolator columns）来实现对事务的2pC控制（论文中提到五个列，其它三个列是结合了Google的业务场景作其它用途）， Percolator的2PC称为：Prewrite和Commit。首先需要说明一下这两个列的作用：</p>
+<ul>
+<li><code>lock</code> 列<br>用于存储加锁信息。尚未递交的事务，其加锁信息存放在这个字段。</li>
+<li><code>write</code>列<br> 用于存储可见数据的版本（timestamp）,对读请求指引当前可见数据。</li>
+</ul>
+<p>看了上面的关于这两列的描述，你可能还是一头雾水。下面引用论文中的一个例子，五幅图来阐述Percolator的事务模型。</p>
+<p><img src="/images/percolator1.png" alt="p1"><br>首先我们看第一幅图。一个账户表中，Bob有10美元，Joe有2美元。我们可以看到Bob的记录在write字段中最新的数据是<code>data@5</code>, 它表示当前最新的数据是ts 5那个版本的数据， ts 5版本中的数据是10美元，这样读操作就会读到这个5美元。同理，Joe的账号也是这样。</p>
+<p><img src="/images/percolator2.png" alt="p2"></p>
+<p>现在我们要做一个转账操作，从Bob账户转7美元到Joe账账户（第二幅图）。这需要操作多行数据，这里是两行。首先需要加锁，Percolator从要操作的行中随机选择一行作为<code>Primary Row</code>， 其余为<code>Secondary Row</code>，首先对Primary Row加锁， 成功后再对Secondary Row加锁，这里不详细阐述加锁过程，任何加锁失败事务都会失败。从上图我们看到，在ts为7的行（Bob账户）lock列写入了一个锁：I am primary, 该行的write列是空的，数据列值为3（10-7=3）。 此时<code>ts=7</code> 为startTS 。</p>
+<p><img src="/images/percolator3.png" alt="p3"></p>
+<p>然后对Joe账户加锁，同样是ts=7, 在joe账户的加锁信息中包含了指向<code>Primary lock</code>的引用，这样这些行处于同一个事务就关联起来了。 Joe的数据列写入9(2+7=9), write列为空，至此完成Prewrite阶段。</p>
+<p><img src="/images/percolator4.png" alt="p4"></p>
+<p>接下来事务就要Commit了。 Primary Row首先执行Commit, 只要Primary Row commit成功了，事务就成功了。Secondary Row失败了也不要紧，后续会有补救措施。  Commit操作首先清除Primary Row的锁， 然后写入ts=8的行(因为时间是单向递增的，这里是CommitTS)，该行可以称为Commit Row， 因为它不包含数据，只是在<code>write</code>列中写入data@7 , 标识ts=7的数据已经可见了,此刻以后的读操作可以读到版本ts=7的数据了。</p>
+<p><img src="/images/percolator5.png" alt="p5"><br>接下来就是commit Secondary Row了， 通Primary Row的逻辑是一样的。Secondary Row成功commit, 事务就完成了。</p>
+<p>如果Primary Row commit成功，Secondary Row commit失败会怎么样，数据的一致性如何保障？ 由于Percolator没有中心化的事务管理器组件，处理这种异常，只能在下次读操作发起时。如果一个读请求发现要读的数据存在Secondary锁， 它会根据Secondary Row锁去检查其对应的Primary Row的锁是不是还存在，若存在说明事务还没有完成；若不存在则说明，Primary Row已经Commit了， 它会清除Secondary Row的锁， 使该行数据变为可见状态（commit）。 这是一个<code>Roll forward</code>的概念.</p>
+<p>我们可以看到，在这样一个存储系统中，并非所有的行都是数据，还包含了一些事务控制行，或者称为Commit Row. 它的数据Column为空，但Write 列包含了可见数据的TS。 它的作用是标示事务完成，并指引读请求读到新的数据。 随着时间推移，会产生大量冗余的数据行，无用的数据行会被GC线程定时清理。 </p>
+<p>参考：<br><a href="https://pingcap.com/blog-cn/percolator-and-txn/" target="_blank" rel="noopener">https://pingcap.com/blog-cn/percolator-and-txn/</a></p>
+<ul>
+<li>TiDB</li>
+</ul>
 
             </div>
           
@@ -209,7 +220,7 @@
 		
 		<div class="post-tags">
 		  
-			<a href="/tags/ProxySQL/">ProxySQL</a>
+			<a href="/tags/TiDB/">TiDB</a>
 		  
 		</div>
 		
@@ -218,15 +229,9 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2019/03/03/ProxySQL源码之query-digest-text的生成/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">ProxySQL源码之query digest text的生成</span>
-        <span class="prev-text nav-mobile">Prev</span>
-      </a>
     
-    
-      <a class="next" href="/2018/12/29/ProxySQL的链式路由/">
-        <span class="next-text nav-default">ProxySQL的链式路由</span>
+      <a class="next" href="/2019/09/06/Raft一致性协议简说/">
+        <span class="next-text nav-default">Raft一致性协议简说</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="iconfont icon-right"></i>
       </a>
@@ -242,7 +247,7 @@
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
 var gitment = new Gitment({
-  id: 'ProxySQL 白名单与黑名单', // 可选。默认为 location.href
+  id: '五张图理解Percolator分布式事务模型', // 可选。默认为 location.href
   owner: 'mount565',
   repo: 'gitment-comments',
   oauth: {
