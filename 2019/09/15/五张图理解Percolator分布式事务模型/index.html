@@ -48,7 +48,7 @@
 <meta property="og:image" content="https://dbalife.info/images/percolator3.png">
 <meta property="og:image" content="https://dbalife.info/images/percolator4.png">
 <meta property="og:image" content="https://dbalife.info/images/percolator5.png">
-<meta property="og:updated_time" content="2019-09-15T10:52:26.871Z">
+<meta property="og:updated_time" content="2019-09-15T10:57:19.309Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="五张图理解Percolator分布式事务模型">
 <meta name="twitter:description" content="Percolator是Google为实现在海量数据集中更新少量增量数据而创建的一个事务模型。大家知道，Bigtable是Google的分布式存储系统，Google使用Bigtable来存储Web的索引，但遗憾的是Bigtable不支持mulit-row transaction, Percolator">
@@ -208,9 +208,6 @@
 <p>如果Primary Row commit成功，Secondary Row commit失败会怎么样，数据的一致性如何保障？ 由于Percolator没有中心化的事务管理器组件，处理这种异常，只能在下次读操作发起时。如果一个读请求发现要读的数据存在Secondary锁， 它会根据Secondary Row锁去检查其对应的Primary Row的锁是不是还存在，若存在说明事务还没有完成；若不存在则说明，Primary Row已经Commit了， 它会清除Secondary Row的锁， 使该行数据变为可见状态（commit）。 这是一个<code>Roll forward</code>的概念.</p>
 <p>我们可以看到，在这样一个存储系统中，并非所有的行都是数据，还包含了一些事务控制行，或者称为Commit Row. 它的数据Column为空，但Write 列包含了可见数据的TS。 它的作用是标示事务完成，并指引读请求读到新的数据。 随着时间推移，会产生大量冗余的数据行，无用的数据行会被GC线程定时清理。 </p>
 <p>参考：<br><a href="https://pingcap.com/blog-cn/percolator-and-txn/" target="_blank" rel="noopener">https://pingcap.com/blog-cn/percolator-and-txn/</a></p>
-<ul>
-<li>TiDB</li>
-</ul>
 
             </div>
           
