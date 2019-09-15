@@ -48,7 +48,7 @@
 <meta property="og:image" content="https://dbalife.info/images/percolator3.png">
 <meta property="og:image" content="https://dbalife.info/images/percolator4.png">
 <meta property="og:image" content="https://dbalife.info/images/percolator5.png">
-<meta property="og:updated_time" content="2019-09-15T10:57:19.309Z">
+<meta property="og:updated_time" content="2019-09-15T12:13:44.457Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="五张图理解Percolator分布式事务模型">
 <meta name="twitter:description" content="Percolator是Google为实现在海量数据集中更新少量增量数据而创建的一个事务模型。大家知道，Bigtable是Google的分布式存储系统，Google使用Bigtable来存储Web的索引，但遗憾的是Bigtable不支持mulit-row transaction, Percolator">
@@ -197,7 +197,7 @@
 <li><code>write</code>列<br> 用于存储可见数据的版本（timestamp）,对读请求指引当前可见数据。</li>
 </ul>
 <p>看了上面的关于这两列的描述，你可能还是一头雾水。下面引用论文中的一个例子，五幅图来阐述Percolator的事务模型。</p>
-<p><img src="/images/percolator1.png" alt="p1"><br>首先我们看第一幅图。一个账户表中，Bob有10美元，Joe有2美元。我们可以看到Bob的记录在write字段中最新的数据是<code>data@5</code>, 它表示当前最新的数据是ts 5那个版本的数据， ts 5版本中的数据是10美元，这样读操作就会读到这个5美元。同理，Joe的账号也是这样。</p>
+<p><img src="/images/percolator1.png" alt="p1"><br>首先我们看第一幅图。一个账户表中，Bob有10美元，Joe有2美元。我们可以看到Bob的记录在write字段中最新的数据是<code>data@5</code>, 它表示当前最新的数据是ts 5那个版本的数据， ts 5版本中的数据是10美元，这样读操作就会读到这个10美元。同理，Joe的账号也是这样。</p>
 <p><img src="/images/percolator2.png" alt="p2"></p>
 <p>现在我们要做一个转账操作，从Bob账户转7美元到Joe账账户（第二幅图）。这需要操作多行数据，这里是两行。首先需要加锁，Percolator从要操作的行中随机选择一行作为<code>Primary Row</code>， 其余为<code>Secondary Row</code>，首先对Primary Row加锁， 成功后再对Secondary Row加锁，这里不详细阐述加锁过程，任何加锁失败事务都会失败。从上图我们看到，在ts为7的行（Bob账户）lock列写入了一个锁：I am primary, 该行的write列是空的，数据列值为3（10-7=3）。 此时<code>ts=7</code> 为startTS 。</p>
 <p><img src="/images/percolator3.png" alt="p3"></p>
