@@ -35,20 +35,20 @@
 <link rel="canonical" href="https://dbalife.info/2019/09/06/Raft一致性协议简说/"/>
 
 
-<meta name="description" content="数据一致性是在一个需要容错的分布式系统中提出的概念。这里的一致性我们要特别搞清楚，主要有以下两层含义：   * Raft系统中所有节点的数据状态最终一致  * Raft系统中大部分节点的日志状态实时一致  一直以来一致性算法都是一个高深莫测的领域,特别是一致性算法的鼻祖Paxos，以复杂难懂而著称！">
+<meta name="description" content="数据一致性是在一个需要容错的分布式系统中提出的概念。在Raft系统中数据是一致的。这里的数据一致我们要特别搞清楚，主要有以下两层含义：   * Raft系统中所有节点的数据状态最终一致  * Raft系统中大部分节点的日志状态实时一致  一直以来一致性算法都是一个高深莫测的领域,特别是一致性算法的鼻">
 <meta name="keywords" content="raft,tidb">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Raft一致性协议简说">
 <meta property="og:url" content="https://dbalife.info/2019/09/06/Raft一致性协议简说/index.html">
 <meta property="og:site_name" content="DBA Life">
-<meta property="og:description" content="数据一致性是在一个需要容错的分布式系统中提出的概念。这里的一致性我们要特别搞清楚，主要有以下两层含义：   * Raft系统中所有节点的数据状态最终一致  * Raft系统中大部分节点的日志状态实时一致  一直以来一致性算法都是一个高深莫测的领域,特别是一致性算法的鼻祖Paxos，以复杂难懂而著称！">
+<meta property="og:description" content="数据一致性是在一个需要容错的分布式系统中提出的概念。在Raft系统中数据是一致的。这里的数据一致我们要特别搞清楚，主要有以下两层含义：   * Raft系统中所有节点的数据状态最终一致  * Raft系统中大部分节点的日志状态实时一致  一直以来一致性算法都是一个高深莫测的领域,特别是一致性算法的鼻">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://dbalife.info/images/raft-role.png">
 <meta property="og:image" content="https://dbalife.info/images/log-compaction.png">
-<meta property="og:updated_time" content="2019-09-06T11:13:44.244Z">
+<meta property="og:updated_time" content="2019-09-19T13:20:47.493Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Raft一致性协议简说">
-<meta name="twitter:description" content="数据一致性是在一个需要容错的分布式系统中提出的概念。这里的一致性我们要特别搞清楚，主要有以下两层含义：   * Raft系统中所有节点的数据状态最终一致  * Raft系统中大部分节点的日志状态实时一致  一直以来一致性算法都是一个高深莫测的领域,特别是一致性算法的鼻祖Paxos，以复杂难懂而著称！">
+<meta name="twitter:description" content="数据一致性是在一个需要容错的分布式系统中提出的概念。在Raft系统中数据是一致的。这里的数据一致我们要特别搞清楚，主要有以下两层含义：   * Raft系统中所有节点的数据状态最终一致  * Raft系统中大部分节点的日志状态实时一致  一直以来一致性算法都是一个高深莫测的领域,特别是一致性算法的鼻">
 <meta name="twitter:image" content="https://dbalife.info/images/raft-role.png">
 
 
@@ -186,7 +186,7 @@
 
     
             <div class="post-content">
-            <p>数据一致性是在一个需要容错的分布式系统中提出的概念。这里的<strong>一致性</strong>我们要特别搞清楚，主要有以下两层含义：</p>
+            <p>数据一致性是在一个需要容错的分布式系统中提出的概念。在Raft系统中数据是一致的。这里的<strong>数据一致</strong>我们要特别搞清楚，主要有以下两层含义：</p>
 <ul>
 <li>Raft系统中所有节点的数据状态<strong>最终</strong>一致</li>
 <li>Raft系统中<strong>大部分</strong>节点的日志状态<strong>实时</strong>一致</li>
