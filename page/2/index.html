@@ -168,6 +168,60 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="cust-link" href="/2019/03/22/一条delete语句导致slave-hang住一天/">一条delete语句导致slave hang住一天</a>
+        
+      </h1>
+
+      <time class="post-time">
+          Mar 22 2019
+      </time>
+    </header>
+
+
+
+    
+        <div class="post-excerpt">
+            
+            
+              
+            
+
+            
+              生产环境一条简单的delete语句，导致slave hang住，复制延迟不断增加！
+
+这个问题很怪，整个系统CPU，内存，磁盘IO都没有超载，就是一个SQL线程运行，超级慢！
+查看事务状态复制SQL线程一直处于fetching rows.
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+          <div class="read-more">
+            <a href="/2019/03/22/一条delete语句导致slave-hang住一天/" class="cust-link">Read more</a>
+          </div>
+
+        </div>
+            
+          
+
+    
+  </article>
+
+        
+            
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="cust-link" href="/2019/03/04/ProxySQL源码之SQL执行时间的计算/">ProxySQL源码之SQL执行时间的计算</a>
         
       </h1>
@@ -521,45 +575,6 @@ docker 镜像的entry point 使用front进程启动proxysql，这样不会生产
   </article>
 
         
-            
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="cust-link" href="/2018/11/17/MySQL-filesort-算法探秘/">MySQL filesort 算法探秘</a>
-        
-      </h1>
-
-      <time class="post-time">
-          Nov 17 2018
-      </time>
-    </header>
-
-
-
-    
-        <div class="post-excerpt">
-            
-            
-              
-            
-
-            
-              filesort直接影响SQL的执行效率，使导致慢查询的罪魁祸首。无论从研发人员还是DBA都有必要对这一元凶加深理解。今天我花了些时间研究了下官方文档，写一片总结加深理解。
-
-MySQL 针对filesort实现了三种算法，这三种算法可以说是在一种算法上针对不同使用场景的改进，以至于它们都没有一个正
-          <div class="read-more">
-            <a href="/2018/11/17/MySQL-filesort-算法探秘/" class="cust-link">Read more</a>
-          </div>
-
-        </div>
-            
-          
-
-    
-  </article>
-
-        
         
   <nav class="pagination">
     
@@ -597,14 +612,14 @@ MySQL 针对filesort实现了三种算法，这三种算法可以说是在一种
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
@@ -626,7 +641,7 @@ MySQL 针对filesort实现了三种算法，这三种算法可以说是在一种
     
         2017 -
     
-    2019
+    2020
     <span class="footer-author">William Wang.</span>
     <span class="power-by">
         Powered by <a class="hexo-link" href="https://hexo.io/">Hexo</a> and <a class="theme-link" href="https://github.com/frostfan/hexo-theme-polarbear">Polar Bear</a>
