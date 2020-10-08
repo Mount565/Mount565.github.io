@@ -49,7 +49,7 @@
 <meta property="og:image" content="https://dbalife.info/images/MySQL-ProxySQL-RW-proxysql_sysbench_on_the_same_node.png">
 <meta property="og:image" content="https://dbalife.info/images/MySQL-ProxySQL-RW-proxysql_sysbench_seperate.png">
 <meta property="og:image" content="https://dbalife.info/images/MySQL-ProxySQL-RW_mysql_using-ps.png">
-<meta property="og:updated_time" content="2018-11-15T12:42:06.091Z">
+<meta property="og:updated_time" content="2020-10-08T14:27:03.143Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ProxySQL测试报告">
 <meta name="twitter:description" content="基本信息 ProxySQL 版本：v1.4.12 ProxySQL OS: CentOS7 压测工具：sysbench 后端server： mysql5.7.22, 一主一从架构 MySQL OS: CentOS6  ProxySQL 配置： ProxySQL的变量设置均为默认。   * mysql">
@@ -265,7 +265,8 @@
 <p>下面将压测节点与ProxySQL部署节点分开再次压测ProxySQL，然后再次与直连mysql对比绘图。</p>
 <p><img src="/images/MySQL-ProxySQL-RW-proxysql_sysbench_seperate.png" alt="a"></p>
 <p>这种测试情况下，ProxySQL有两个网络延时，一个是sysbench到proxysql,一个是proxysql到mysql，但直连mysql 的性能还是有些低，比不上连接proxysqlSQL,可能是因为压测mysql时未启用prepare statement，mysql的性能未充分发挥出来. 去掉–db-ps-mode=disable后压测mysql,再试下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sysbench /usr/local/share/sysbench/oltp_read_write.lua --mysql-host=192.168.216.203 --db-driver=mysql --mysql-port=3306 --mysql-db=test --mysql-user=test --mysql-password=test --table_size=10000000 --tables=5 --skip-trx=off  --threads=$thread  --time=120 --report-interval=20 run</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/MySQL-ProxySQL-RW_mysql_using-ps.png" alt="a"><br>由上图可以看到，当线程数小于100时，mysql tps性能高，大于100后，两者旗鼓相当。<br><strong>我得出的结论是ProxySQL性能极佳，对提升数据库整体性能有很大帮助！</strong>  各位看官，你们测的结果如何？</p>
+<p><img src="/images/MySQL-ProxySQL-RW_mysql_using-ps.png" alt="a"><br>由上图可以看到，当线程数小于100时，mysql tps性能高，大于100后，两者旗鼓相当。<br><strong>我得出的结论是ProxySQL性能极佳，对提升数据库整体性能有很大帮助！</strong>  各位看官，你们测的结果如何？<br>&lt;&lt;END</p>
+<p>Hey! I’m open to a new position. If your company is hiring, welcome to contact me! (weixin: cq_mount) Thanks!</p>
 
             </div>
           
@@ -347,14 +348,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">32</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raft/">raft</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 

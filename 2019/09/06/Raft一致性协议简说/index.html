@@ -45,7 +45,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://dbalife.info/images/raft-role.png">
 <meta property="og:image" content="https://dbalife.info/images/log-compaction.png">
-<meta property="og:updated_time" content="2019-09-19T13:20:47.493Z">
+<meta property="og:updated_time" content="2020-10-08T14:27:53.188Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Raft一致性协议简说">
 <meta name="twitter:description" content="数据一致性是在一个需要容错的分布式系统中提出的概念。在Raft系统中数据是一致的。这里的数据一致我们要特别搞清楚，主要有以下两层含义：   * Raft系统中所有节点的数据状态最终一致  * Raft系统中大部分节点的日志状态实时一致  一直以来一致性算法都是一个高深莫测的领域,特别是一致性算法的鼻">
@@ -221,8 +221,9 @@
 <li><p><strong>Log replication/heartbeat</strong><br>Leader响应客户端请求，Client的每一个请求都是对状态机数据的修改。Leader收到请求后，首先将该命令Append到自己的日志中，然后发送AppendEntry RPC (Heartbeat也是AppendEntry RPC包,只是里面没有日志) 向集群中的其它节点广播这一操作，当大多数节点收到这一日志时，Leader就将该日志在状态机中应用（commit）, 成功应用后才返回给Client成功。如果某个节点没有反馈成功收到这一日志，Leader会持续不断地向其广播，即使该日志已经成功Commit也不会停止，直到其收到为止。当然Raft采取了许多措施来保证日志的完整性和一致性。 Log Replication是Raft系统中最频繁的活动，它开始于Raft系统启动，终止与整个系统停止。</p>
 </li>
 <li><strong>Membership change</strong><br>理解Raft成员变更可以参考MySQL MGR中的<a href="https://dev.mysql.com/doc/refman/8.0/en/group-replication-view-changes.html" target="_blank" rel="noopener">View &amp; ViewChanges</a>. 当集群中某个节点宕机或者添加新的节点到集群时，会触发Membership change. Raft采用Joint Consensus机制来保证平滑过渡，并且不影响对Client请求的处理。这一活动在Raft系统中也不常见。</li>
-<li><strong>Log compaction</strong><br>Log不能无限增长。Raft会定期对日志做快照（snapshot），这一操作与Redis中的Log Rewrite类似（如下图）。在实际的实现中，庞大的数据集可能会使日志占有巨大空间，即使经过压缩后，日志量还是很大，还应实现定时清理机制。TiKV中通过一些参数（如：raft-log-gc-size-limit）设定来控制Raft Log的残余量,超过这一设置会被清理以节省空间。<br><img src="/images/log-compaction.png" alt="raft-log-compaction"><h1 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h1>简单来看，上述几个部分包含了Raft协议的主要内容。希望对了解Raft概貌有些帮助。对细节的阐述往往使问题变得复杂，学习新鲜事物时，我们可以先从全局来看其全貌，将其拆解为几大模块，然后再分别详细研究各个模块的细节，等了解了细节，再从全局来看各各模块之间的关系，直到彻底了解整个系统。</li>
+<li><strong>Log compaction</strong><br>Log不能无限增长。Raft会定期对日志做快照（snapshot），这一操作与Redis中的Log Rewrite类似（如下图）。在实际的实现中，庞大的数据集可能会使日志占有巨大空间，即使经过压缩后，日志量还是很大，还应实现定时清理机制。TiKV中通过一些参数（如：raft-log-gc-size-limit）设定来控制Raft Log的残余量,超过这一设置会被清理以节省空间。<br><img src="/images/log-compaction.png" alt="raft-log-compaction"><h1 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h1>简单来看，上述几个部分包含了Raft协议的主要内容。希望对了解Raft概貌有些帮助。对细节的阐述往往使问题变得复杂，学习新鲜事物时，我们可以先从全局来看其全貌，将其拆解为几大模块，然后再分别详细研究各个模块的细节，等了解了细节，再从全局来看各各模块之间的关系，直到彻底了解整个系统。<br>&lt;&lt;END</li>
 </ol>
+<p>Hey! I’m open to a new position. If your company is hiring, welcome to contact me! (weixin: cq_mount) Thanks!</p>
 
             </div>
           
@@ -306,14 +307,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">32</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raft/">raft</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 

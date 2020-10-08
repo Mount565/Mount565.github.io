@@ -43,7 +43,7 @@
 <meta property="og:site_name" content="DBA Life">
 <meta property="og:description" content="ProxySQL内部有一个Monitor模块，通过一个monitor账户对后端数据库进行监控，监控的内容主要包括：数据库可用性，是否read_only以及slave延迟。  配置监控账户 首先要在ProxySQL中配置监控账户。它是通过global variables来配置的。 1 2 3 4 5">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-12T12:27:58.465Z">
+<meta property="og:updated_time" content="2020-10-08T14:29:03.636Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ProxySQL的服务发现机制">
 <meta name="twitter:description" content="ProxySQL内部有一个Monitor模块，通过一个monitor账户对后端数据库进行监控，监控的内容主要包括：数据库可用性，是否read_only以及slave延迟。  配置监控账户 首先要在ProxySQL中配置监控账户。它是通过global variables来配置的。 1 2 3 4 5">
@@ -201,6 +201,8 @@
 <li>mysql_server_read_only_log 检查表mysql_replication_hostgroups配置的所有主机mysql的read_only属性，并将结果记录到该表中。如果read_only=1该主机会被复制/移动到reader_hostgroup中，否则复制/移动到writer_hostgroup中。</li>
 </ul>
 <p>ProxySQL的这一特性可与后端mysql自动failover工具（MHA， mysqlfailover等）相结合，使得failover发生时，无须执行ip_failover通知上层，ProxySQL 会自动检测MySQL的主从架构变化，并调整读写hostgroup中的主机。使整个failover过程更加默契。但在ProxySQL层又存在了新的高可用问题，一台proxy实例挂了,优雅地通知上层应用连接另一台？（vip ? DNS ? zookeeper ?）</p>
+<p>&lt;&lt;END</p>
+<p>Hey! I’m open to a new position. If your company is hiring, welcome to contact me! (weixin: cq_mount) Thanks!</p>
 
             </div>
           
@@ -282,14 +284,14 @@ gitment.render('gcontainer')
     
     <section id="tags" class="widget-area widget_categories">
         <h3 class="widget-title">Categories</h3>
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
+        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/English/">English</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MyCAT/">MyCAT</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">32</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/ProxySQL/">ProxySQL</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/TiDB/">TiDB</a><span class="category-list-count">2</span></li></ul>
     </section>
 
 
     
     <section id="tags" class="widget-area widget_tags">
         <h3 class="widget-title">Tags</h3>
-        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PXC/">PXC</a><span class="tag-list-count">1</span></li></ul>
+        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ProxySQL/">ProxySQL</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a><span class="tag-list-count">21</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL8/">MySQL8</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OPS/">OPS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MyCAT/">MyCAT</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MGR/">MGR</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HA/">HA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Group-Replication/">Group Replication</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raft/">raft</a><span class="tag-list-count">1</span></li></ul>
     </section>
 
 
